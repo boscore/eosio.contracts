@@ -52,11 +52,144 @@ namespace eosiosystem {
          });
       }
 
-      /// only update block producers once every minute, block_timestamp is in half seconds
-      if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {
-         update_elected_producers( timestamp );
 
-         if( (timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day ) {
+      //bos  name length  category
+      boost::container::flat_map<uint8_t, uint8_t> biddeals;
+      boost::container::flat_map<uint8_t, uint8_t>::iterator itbiddeals;
+      uint16_t bitdeals=0;// 1111 1111 1000    1表示当前位对应短名长度的本次拍卖成交数达到上限
+      uint16_t bitdealed=0;// 1111 1111 1000    1表示当前位对应短名长度的本次有拍卖成交
+      uint16_t bitcloses=0;// 1111 1111 1000   1表示当前位对应短名长度的上次拍卖成功关闭时间未超过一天时间
+     
+          auto updateclose = [&](const auto &length) -> void {
+         bid_close_table closes_table(_self, _self.value);
+         auto it = closes_table.find(length);
+
+         if (it != closes_table.end()){
+             closes_table.modify( it, same_payer, [&]( auto& b ) {
+           b.last_name_close = timestamp;
+         });
+         }
+         
+      };
+      auto bidclose = [&](const auto &length) -> block_timestamp {
+         bid_close_table closes_table(_self, _self.value);
+         auto it = closes_table.find(length);
+
+         if (it != closes_table.end()){
+            return it->last_name_close;
+         }
+
+         return block_timestamp();
+      } ;
+       auto checkclosebylength = [&](auto &length) ->bool {
+       block_timestamp last_name_close = bidclose(length);
+         if ((timestamp.slot - last_name_close.slot) > blocks_per_day)
+         {
+            return true;
+         }
+
+         bitcloses |= 0x1<<length;
+
+         return false;
+
+      };
+
+      auto checkcloses = [&]() ->bool {
+         const int START_LENGTH = 3;
+         const int END_LENGTH=11;
+         for(int i=START_LENGTH;i<=END_LENGTH;i++)
+         {
+           checkclosebylength(i);
+         }
+
+         return 0xFF8!=(bitcloses&0xFF8);
+      };
+      
+
+
+   auto updatecloses = [&]() ->void {
+         const int START_LENGTH = 3;
+         const int END_LENGTH=11;
+         for(int i=START_LENGTH;i<=END_LENGTH;i++)
+         {
+         bool bidclose = checkclosebylength(i);//
+         bool dealed = (bitdealed&(0x1<<i)) != 0;
+         if(bidclose&&dealed){
+           updateclose(i);
+         }
+      }
+
+      };
+
+        auto checkdealbylength = [&](const auto &length) ->bool{
+     
+         uint8_t topn = length<=3?1:length;
+         uint8_t deals = 0;
+         itbiddeals = biddeals.find(length);
+
+         if(itbiddeals !=biddeals.end())
+         {
+            deals = itbiddeals->second;
+         }
+         else
+         {
+            biddeals[length]=deals;
+         }
+
+         if(deals>=topn)
+         {
+            bitdeals |= 0x1<<length;
+            return false;
+         }
+         
+         return true;
+      };
+
+         auto checkbidbylength = [&](auto &highest, auto &idx) {
+         if(highest == idx.end())
+         {
+            return;
+         }
+
+         do
+         {
+         uint8_t length = highest->newname.length();
+         length = length<=3?3:length;
+         block_timestamp last_name_close = bidclose(length);
+           
+         bool bidclose = checkclosebylength(length);
+         bool deal = checkdealbylength(length);
+        
+
+         if (bidclose&& deal&& highest->high_bid > 0 &&
+             (current_time_point() - highest->last_bid_time) > microseconds(useconds_per_day))
+         {
+          
+            idx.modify(highest, same_payer, [&](auto &b) {
+               b.high_bid = -b.high_bid;
+            });
+
+            biddeals[length]++;
+            bitdealed |= 0x1<<length;
+         }
+
+         if (0xFF8==(bitdeals&0xFF8))
+         {
+            break; //各个长度达到上限
+         }
+
+         highest++;
+         }while(highest!=idx.end());
+
+         updatecloses();
+      };
+
+   /// only update block producers once every minute, block_timestamp is in half seconds
+    if (timestamp.slot - _gstate.last_producer_schedule_update.slot > 120)
+      {
+         update_elected_producers( timestamp );
+         if( (timestamp.slot - _gstate.last_name_close.slot) > blocks_per_day && checkcloses()) {
+     
             name_bid_table bids(_self, _self.value);
             auto idx = bids.get_index<"highbid"_n>();
             auto highest = idx.lower_bound( std::numeric_limits<uint64_t>::max()/2 );
@@ -66,11 +199,14 @@ namespace eosiosystem {
                 _gstate.thresh_activated_stake_time > time_point() &&
                 (current_time_point() - _gstate.thresh_activated_stake_time) > microseconds(14 * useconds_per_day)
             ) {
-               _gstate.last_name_close = timestamp;
-               idx.modify( highest, same_payer, [&]( auto& b ){
-                  b.high_bid = -b.high_bid;
-               });
+               checkbidbylength(highest,idx);
+               // _gstate.last_name_close = timestamp;
+               // idx.modify( highest, same_payer, [&]( auto& b ){
+               //    b.high_bid = -b.high_bid;
+               // });
             }
+
+              _gstate.last_name_close = timestamp;
          }
       }
    }
