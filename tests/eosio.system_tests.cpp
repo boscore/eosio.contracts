@@ -2898,8 +2898,7 @@ BOOST_FIXTURE_TEST_CASE( bid_invalid_names, eosio_system_tester ) try {
 } FC_LOG_AND_RETHROW()
 
 BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
- 
-   const std::string not_closed_message("auction for name is not closed yet");
+    const std::string not_closed_message("auction for name is not closed yet");
 
    std::vector<account_name> accounts = { N(alice), N(bob), N(carl), N(david), N(eve) };
    create_accounts_with_resources( accounts );
@@ -2918,7 +2917,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
    BOOST_REQUIRE_EQUAL( success(), vote( N(carl), { N(producer) } ) );
 
    // start bids
-   bidname( "bob",  "a", core_sym::from_string("1.0003") );
+   bidname( "bob",  "prefa", core_sym::from_string("1.0003") );
    BOOST_REQUIRE_EQUAL( core_sym::from_string( "9998.9997" ), get_balance("bob") );
    bidname( "bob",  "prefb", core_sym::from_string("1.0000") );
    bidname( "bob",  "prefc", core_sym::from_string("1.0000") );
@@ -2970,7 +2969,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
 
    // stake enough to go above the 15% threshold
    stake_with_transfer( config::system_account_name, "alice", core_sym::from_string( "10000000.0000" ), core_sym::from_string( "10000000.0000" ) );
-   BOOST_REQUIRE_EQUAL(9, get_producer_info("producer")["unpaid_blocks"].as<uint32_t>());
+   BOOST_REQUIRE_EQUAL(0, get_producer_info("producer")["unpaid_blocks"].as<uint32_t>());
    BOOST_REQUIRE_EQUAL( success(), vote( N(alice), { N(producer) } ) );
 
    // need to wait for 14 days after going live
@@ -2984,7 +2983,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
    create_account_with_resources( N(prefd), N(david) );
    produce_blocks(2);
    produce_block( fc::hours(23) );
-   // auctions for a, prefb, prefc, prefe haven't been closed
+   // auctions for prefa prefb, prefc, prefe haven't been closed
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefa), N(bob) ),
                             fc::exception, fc_assert_exception_message_is( not_closed_message ) );
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefb), N(alice) ),
