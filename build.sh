@@ -9,6 +9,6 @@ CORES=`getconf _NPROCESSORS_ONLN`
 mkdir -p build
 rm -f build/CMakeCache.txt
 pushd build &> /dev/null
-cmake ../
+cmake -DCMAKE_BUILD_TYPE=Debug ../
 make -j${CORES}
 popd &> /dev/null
