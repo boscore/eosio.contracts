@@ -2898,7 +2898,8 @@ BOOST_FIXTURE_TEST_CASE( bid_invalid_names, eosio_system_tester ) try {
 } FC_LOG_AND_RETHROW()
 
 BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
-    const std::string not_closed_message("auction for name is not closed yet");
+   
+   const std::string not_closed_message("auction for name is not closed yet");
 
    std::vector<account_name> accounts = { N(alice), N(bob), N(carl), N(david), N(eve) };
    create_accounts_with_resources( accounts );
@@ -2983,7 +2984,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
    create_account_with_resources( N(prefd), N(david) );
    produce_blocks(2);
    produce_block( fc::hours(23) );
-   // auctions for prefa prefb, prefc, prefe haven't been closed
+   // auctions for prefa, prefb, prefc, prefe haven't been closed
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefa), N(bob) ),
                             fc::exception, fc_assert_exception_message_is( not_closed_message ) );
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefb), N(alice) ),
