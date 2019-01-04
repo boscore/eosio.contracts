@@ -3075,38 +3075,6 @@ try
    BOOST_REQUIRE_EQUAL(success(), vote(N(carl), {N(producer)}));
 
    BOOST_REQUIRE_EQUAL(success(), buyram("bob", "bob", core_sym::from_string("300.0000")));
-   string namesubstr = "";
-   auto bidnamebylength = [&](const string &str) {
-      const string cstr = str;
-      BOOST_REQUIRE_EQUAL(success(),
-                          bidname("bob", name(cstr), core_sym::from_string("1.0000")));
-      int len = str.length();
-      for (int i = 0; i < len; i++)
-      {
-         namesubstr = cstr;
-         namesubstr += std::string(1, 'z' - i);
-         BOOST_REQUIRE_EQUAL(success(),
-                             bidname("bob", name(namesubstr), core_sym::from_string("1.1000")));
-         //bidname("bob", name(str + std::string(1,'z'-i)), core_sym::from_string("1.1000"));
-      }
-   };
-
-   // start bids
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "a", core_sym::from_string("1.0001")));
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "ab", core_sym::from_string("1.0002")));
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "xyz", core_sym::from_string("1.0033")));
-   string basestr = "abcdefghijk";
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", name(basestr), core_sym::from_string("1.0000")));
-
-   for (int i = 3; i < basestr.length(); i++)
-   {
-      namesubstr = basestr.substr(0, i);
-      bidnamebylength(namesubstr);
-   }
 
    // BOOST_REQUIRE_EQUAL( core_sym::from_string( "9987.9981" ), get_balance("bob") );
 
@@ -3149,6 +3117,47 @@ try
    produce_blocks(2);
 
    produce_block();
+   string namesubstr = "";
+   auto bidnamebylength = [&](const string &str) {
+      const string cstr = str;
+      int len = str.length();
+      string symstr = "1.000";
+
+      symstr += std::to_string(len - 1);
+      BOOST_REQUIRE_EQUAL(success(),
+                          bidname("bob", name(cstr), core_sym::from_string(symstr)));
+      // for (int i = 0; i < len; i++)
+      // {
+      //    namesubstr = cstr;
+      //    namesubstr += std::string(1, 'z' - i);
+      //    BOOST_REQUIRE_EQUAL(success(),
+      //                        bidname("bob", name(namesubstr), core_sym::from_string("1.1000")));
+      //    //bidname("bob", name(str + std::string(1,'z'-i)), core_sym::from_string("1.1000"));
+      // }
+   };
+
+   // start bids
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "a", core_sym::from_string("1.0000")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "ab", core_sym::from_string("1.0000")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "xyz", core_sym::from_string("2.0033")));
+   string basestr = "abcdefghijk";
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", name(basestr), core_sym::from_string("1.0010")));
+
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "abab", core_sym::from_string("1.0001")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "bcbc", core_sym::from_string("1.0002")));
+
+   for (int i = 4; i < basestr.length(); i++)
+   {
+      namesubstr = basestr.substr(0, i);
+      bidnamebylength(namesubstr);
+   }
+
    produce_block(fc::hours(24));
    // fc::mutable_variant_object obj = fc::mutable_variant_object()( "alice1111111","a" );
    //   REQUIRE_MATCHING_OBJECT( obj, get_name_bid( "a" ) );
@@ -3156,7 +3165,7 @@ try
 
    //   BOOST_TEST(0 == obj["high_bid"].as_double());
 
-   //   BOOST_TEST("1"==get_producer_info("producer")["url"].as_string());
+   BOOST_TEST("1" == get_producer_info("producer")["url"].as_string());
 
    //     BOOST_TEST(154==get_producer_info("producer")["location"].as<uint16_t>());
 
@@ -3165,34 +3174,148 @@ try
    auto createnamebylength = [&](const string &str) {
       const string cstr = str;
       int len = str.length();
-      for (int i = 0; i < len; i++)
+      // for (int i = 0; i < len; i++)
       {
          namesubstr = cstr;
-         namesubstr += std::string(1, 'z' - i);
-         // BOOST_TEST(""==namesubstr);
+         // namesubstr += std::string(1, 'z' - i);
+         BOOST_TEST("" == namesubstr);
          create_account_with_resources(name(namesubstr), N(bob));
       }
    };
 
-   // start bids
-   for (int i = 3; i < basestr.length(); i++)
+   for (int i = 4; i <= basestr.length(); i++)
    {
       namesubstr = basestr.substr(0, i);
       createnamebylength(namesubstr);
    }
 
-   for (int i = 1; i <= basestr.length(); i++)
-   {
-      // bool bb = !is_account( basestr.substr(0,i));
+   createnamebylength("abab");
+   createnamebylength("bcbc");
 
-      // BOOST_TEST(""==namesubstr);
+   createnamebylength("xyz");
+
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(a), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   ////=================================full great then four deal
+
+   // start bids
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "uvw", core_sym::from_string("0.0033")));
+   basestr = "xbcdefghijk";
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", name(basestr), core_sym::from_string("1.0010")));
+
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "xbab", core_sym::from_string("1.0001")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "xcbc", core_sym::from_string("1.0002")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "opqr", core_sym::from_string("1.0000")));
+   for (int i = 4; i < basestr.length(); i++)
+   {
       namesubstr = basestr.substr(0, i);
-      create_account_with_resources(namesubstr, N(bob));
-      //  BOOST_REQUIRE_EXCEPTION( create_account_with_resources( namesubstr, N(bob) ),
-      //                     fc::exception, fc_assert_exception_message_is( not_closed_message ) );
-      // BOOST_REQUIRE_EXCEPTION( create_accounts_with_resources( { name(namesubstr) }, N(bob) ), // bob shouldn't be able to create fail
-      //                    eosio_assert_message_exception, eosio_assert_message_is( "no active bid for name" ) );
+      bidnamebylength(namesubstr);
    }
+
+   produce_block(fc::hours(24));
+   // fc::mutable_variant_object obj = fc::mutable_variant_object()( "alice1111111","a" );
+   //   REQUIRE_MATCHING_OBJECT( obj, get_name_bid( "a" ) );
+   //    auto obj = get_name_bid("a") ;
+
+   //   BOOST_TEST(0 == obj["high_bid"].as_double());
+
+   BOOST_TEST("1" == get_producer_info("producer")["url"].as_string());
+
+   //     BOOST_TEST(154==get_producer_info("producer")["location"].as<uint16_t>());
+
+   // by now bid for ae has closed
+
+   for (int i = 4; i <= basestr.length(); i++)
+   {
+      namesubstr = basestr.substr(0, i);
+      createnamebylength(namesubstr);
+   }
+
+   createnamebylength("xbab");
+   createnamebylength("xcbc");
+
+   // createnamebylength("uvw");
+
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(uvw), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(opqr), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   ////=================================full less then four deal
+
+   // start bids
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "rst", core_sym::from_string("3.0033")));
+   basestr = "ybcdefghijk";
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "opq", core_sym::from_string("1.0010")));
+
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "ybab", core_sym::from_string("1.0001")));
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "ycbc", core_sym::from_string("1.0001")));
+
+   for (int i = 0; i < basestr.length() - 2; i++)
+   {
+      namesubstr = basestr.substr(i, 3);
+      bidnamebylength(namesubstr);
+   }
+
+   produce_block(fc::hours(24));
+   // fc::mutable_variant_object obj = fc::mutable_variant_object()( "alice1111111","a" );
+   //   REQUIRE_MATCHING_OBJECT( obj, get_name_bid( "a" ) );
+   //    auto obj = get_name_bid("a") ;
+
+   //   BOOST_TEST(0 == obj["high_bid"].as_double());
+
+   BOOST_TEST("1" == get_producer_info("producer")["url"].as_string());
+
+   //     BOOST_TEST(154==get_producer_info("producer")["location"].as<uint16_t>());
+
+   // by now bid for ae has closed
+
+   createnamebylength("rst");
+   for (int i = 0; i < basestr.length() - 2; i++)
+   {
+      namesubstr = basestr.substr(i, 3);
+      BOOST_TEST("" == namesubstr);
+      BOOST_REQUIRE_EXCEPTION(create_account_with_resources(name(namesubstr), N(bob)),
+                              fc::exception, fc_assert_exception_message_is(not_closed_message));
+   }
+
+   BOOST_TEST("" == "opq");
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(opq), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   BOOST_TEST("" == "ycbc");
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(ycbc), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   // createnamebylength("uvw");
+
+   BOOST_TEST("" == "ybab");
+   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(ybab), N(bob)),
+                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+   // for (int i = 1; i <= basestr.length(); i++)
+   // {
+   //    // bool bb = !is_account( basestr.substr(0,i));
+
+   //    // BOOST_TEST(""==namesubstr);
+   //    namesubstr = basestr.substr(0, i);
+   //    // create_account_with_resources(namesubstr, N(bob));
+   //     BOOST_REQUIRE_EXCEPTION( create_account_with_resources( namesubstr, N(bob) ),
+   //                        fc::exception, fc_assert_exception_message_is( not_closed_message ) );
+   //    // BOOST_REQUIRE_EXCEPTION( create_accounts_with_resources( { name(namesubstr) }, N(bob) ), // bob shouldn't be able to create fail
+   //    //                    eosio_assert_message_exception, eosio_assert_message_is( "no active bid for name" ) );
+   // }
 
    // ae can now create *.ae
    // BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(xyz.ae), N(carl) ),

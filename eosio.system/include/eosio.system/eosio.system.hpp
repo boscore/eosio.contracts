@@ -43,22 +43,11 @@ namespace eosiosystem {
       uint64_t primary_key()const { return bidder.value; }
    };
 
-    struct [[eosio::table, eosio::contract("eosio.system")]] bid_close {
-      uint64_t             length = 0; /// the name length
-      block_timestamp      last_name_close;
-      uint64_t primary_key()const { return length; }
-
-      // explicit serialization macro is not necessary, used here only to improve compilation time
-      EOSLIB_SERIALIZE( bid_close, (length)(last_name_close))
-   };
-
-
    typedef eosio::multi_index< "namebids"_n, name_bid,
                                indexed_by<"highbid"_n, const_mem_fun<name_bid, uint64_t, &name_bid::by_high_bid>  >
                              > name_bid_table;
 
    typedef eosio::multi_index< "bidrefunds"_n, bid_refund > bid_refund_table;
-   typedef eosio::multi_index< "bidcloses"_n, bid_close > bid_close_table;
 
    struct [[eosio::table("global"), eosio::contract("eosio.system")]] eosio_global_state : eosio::blockchain_parameters {
       uint64_t free_ram()const { return max_ram_size - total_ram_bytes_reserved; }
