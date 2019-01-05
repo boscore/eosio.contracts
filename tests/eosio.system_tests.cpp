@@ -3056,6 +3056,7 @@ try
 {
 
    const std::string not_closed_message("auction for name is not closed yet");
+   const std::string bid10_message("newname which length is less than 3  must increase bid by 10% than highest bid in all bid ");
 
    std::vector<account_name> accounts = {N(alice), N(bob), N(carl), N(david), N(eve)};
    create_accounts_with_resources(accounts);
@@ -3081,12 +3082,27 @@ try
    // bidname( "carl", "ad", core_sym::from_string("1.0000") );
    // bidname( "carl", "ae", core_sym::from_string("1.0000") );
 
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "eosio", core_sym::from_string("0.0100")));
+
+   BOOST_REQUIRE_EXCEPTION(bidname("bob", "eos", core_sym::from_string("0.0101")),
+                           fc::exception, fc_assert_exception_message_is(bid10_message));
+
+   BOOST_REQUIRE_EQUAL(success(),
+                       bidname("bob", "io", core_sym::from_string("0.1000")));
+
+   BOOST_REQUIRE_EXCEPTION(bidname("bob", "bp", core_sym::from_string("0.1020")),
+                           fc::exception, fc_assert_exception_message_is(bid10_message));
+
    produce_block(fc::days(14));
    produce_block();
 
    // highest bid is from david for ad but no bids can be closed yet
    // BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
    //                          fc::exception, fc_assert_exception_message_is( not_closed_message ) );
+
+BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
+                             fc::exception, fc_assert_exception_message_is( bid10_message ) );
 
    // stake enough to go above the 15% threshold
    stake_with_transfer(config::system_account_name, "alice", core_sym::from_string("10000000.0000"), core_sym::from_string("10000000.0000"));
@@ -3303,6 +3319,10 @@ try
    BOOST_TEST("" == "ybab");
    BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(ybab), N(bob)),
                            fc::exception, fc_assert_exception_message_is(not_closed_message));
+
+
+
+
 
    // for (int i = 1; i <= basestr.length(); i++)
    // {
