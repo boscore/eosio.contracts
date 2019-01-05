@@ -234,12 +234,18 @@ namespace eosiosystem {
 
       name_bid_table bids(_self, _self.value);
 
-       auto idx = bids.get_index<"highbid"_n>();
-            auto highest = idx.lower_bound(std::numeric_limits<uint64_t>::max() / 2);
-            if (highest != idx.end() &&
-                highest->high_bid > 0){
-eosio_assert( bid.amount - highest->high_bid > (highest->high_bid / 10), "newname which length is less than 3  must increase bid by 10% than highest bid in all bid " );
-                }       
+      static const int16_t BASE_LENGTH = 4;
+
+      if (newname.length() < BASE_LENGTH)
+      {
+         auto idx = bids.get_index<"highbid"_n>();
+         auto highest = idx.lower_bound(std::numeric_limits<uint64_t>::max() / 2);
+         if (highest != idx.end() &&
+             highest->high_bid > 0)
+         {
+            eosio_assert(bid.amount - highest->high_bid > (highest->high_bid / 10), "newname which length is less than 3  must increase bid by 10% than highest bid in all bid ");
+         }
+      }
 
       print( name{bidder}, " bid ", bid, " on ", name{newname}, "\n" );
       auto current = bids.find( newname.value );

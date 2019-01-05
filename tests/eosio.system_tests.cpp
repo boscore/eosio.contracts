@@ -3121,9 +3121,9 @@ try
    auto bidnamebylength = [&](const string &str) {
       const string cstr = str;
       int len = str.length();
-      string symstr = "1.000";
+      string symstr = "1.";
 
-      symstr += std::to_string(len - 1);
+      symstr += std::to_string(len - 1)+"000";
       BOOST_REQUIRE_EQUAL(success(),
                           bidname("bob", name(cstr), core_sym::from_string(symstr)));
       // for (int i = 0; i < len; i++)
@@ -3140,9 +3140,9 @@ try
    BOOST_REQUIRE_EQUAL(success(),
                        bidname("bob", "a", core_sym::from_string("1.0000")));
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "ab", core_sym::from_string("1.0000")));
+                       bidname("bob", "ab", core_sym::from_string("2.0000")));
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "xyz", core_sym::from_string("2.0033")));
+                       bidname("bob", "xyz", core_sym::from_string("3.0033")));
    string basestr = "abcdefghijk";
    BOOST_REQUIRE_EQUAL(success(),
                        bidname("bob", name(basestr), core_sym::from_string("1.0010")));
@@ -3201,7 +3201,7 @@ try
 
    // start bids
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "uvw", core_sym::from_string("0.0033")));
+                       bidname("bob", "uvw", core_sym::from_string("10.0033")));
    basestr = "xbcdefghijk";
    BOOST_REQUIRE_EQUAL(success(),
                        bidname("bob", name(basestr), core_sym::from_string("1.0010")));
@@ -3255,7 +3255,7 @@ try
                        bidname("bob", "rst", core_sym::from_string("3.0033")));
    basestr = "ybcdefghijk";
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "opq", core_sym::from_string("1.0010")));
+                       bidname("bob", "opq", core_sym::from_string("4.0010")));
 
    BOOST_REQUIRE_EQUAL(success(),
                        bidname("bob", "ybab", core_sym::from_string("1.0001")));
