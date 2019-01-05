@@ -326,7 +326,7 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
         require_auth(iter->acceptor);
     }
 
-    verify_address(sym_code, address);
+    //verify_address(sym_code, address);
 
     auto addresses = addrs(get_self(), sym_code.raw());
 
@@ -370,7 +370,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
 
     eosio_assert(quantity >= iter->min_limit, "quantity less than min_limit");
 
-    verify_address(quantity.symbol.code(), to);
+    //verify_address(quantity.symbol.code(), to);
 
     bool need_check = false;
 
