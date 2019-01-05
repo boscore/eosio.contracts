@@ -561,7 +561,7 @@ void pegtoken::feedback(symbol_code sym_code, transaction_id_type trx_id, string
     uint128_t sender_id = iter2->id;
     cancel_deferred(sender_id);
     transaction tsn;
-    tsn.actions.push_back({ { get_self(), "defer"_n }, get_self(), "rmwithdraw"_n,
+    tsn.actions.push_back({ { get_self(), "active"_n }, get_self(), "rmwithdraw"_n,
         std::make_tuple(iter2->id, iter2->quantity.symbol.code()) });
     tsn.delay_sec = iter->delayday * ONE_DAY;
     tsn.send(sender_id, get_self(), true);
@@ -594,7 +594,7 @@ void pegtoken::rollback(symbol_code sym_code, transaction_id_type trx_id, string
     uint128_t sender_id = iter2->id;
     cancel_deferred(sender_id);
     transaction tsn;
-    tsn.actions.push_back({ { get_self(), "defer"_n }, get_self(), "rmwithdraw"_n,
+    tsn.actions.push_back({ { get_self(), "active"_n }, get_self(), "rmwithdraw"_n,
         std::make_tuple(iter2->id, iter2->quantity.symbol.code()) });
     tsn.delay_sec = iter->delayday * ONE_DAY;
     tsn.send(sender_id, get_self(), true);
@@ -713,7 +713,7 @@ void pegtoken::sendback(name auditor, transaction_id_type trx_id, name to, asset
     uint128_t sender_id = iter2->id;
     cancel_deferred(sender_id);
     transaction tsn;
-    tsn.actions.push_back({ { get_self(), "defer"_n }, get_self(), "rmwithdraw"_n,
+    tsn.actions.push_back({ { get_self(), "active"_n }, get_self(), "rmwithdraw"_n,
         std::make_tuple(iter2->id, iter2->quantity.symbol.code()) });
     tsn.delay_sec = iter->delayday * ONE_DAY;
     tsn.send(sender_id, get_self(), true);
@@ -727,7 +727,7 @@ void pegtoken::sendback(name auditor, transaction_id_type trx_id, name to, asset
 
 void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code)
 {
-    require_auth2(get_self().value, ("defer"_n).value);
+    require_auth2(get_self().value, ("active"_n).value);
     uint128_t sender_id = id;
     cancel_deferred(id);
     auto withd = withdraws(get_self(), sym_code.raw());
