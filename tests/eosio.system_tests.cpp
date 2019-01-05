@@ -3056,7 +3056,7 @@ try
 {
 
    const std::string not_closed_message("auction for name is not closed yet");
-   const std::string bid10_message("newname which length is less than 3  must increase bid by 10% than highest bid in all bid ");
+   const std::string bid10_message("newname which length is less than 3  must increase bid by 10% than highest bid in all bid");
 
    std::vector<account_name> accounts = {N(alice), N(bob), N(carl), N(david), N(eve)};
    create_accounts_with_resources(accounts);
@@ -3083,16 +3083,27 @@ try
    // bidname( "carl", "ae", core_sym::from_string("1.0000") );
 
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "eosio", core_sym::from_string("0.0100")));
+                       bidname("bob", "eosi", core_sym::from_string("1.0100")));
+   produce_block();
+   BOOST_TEST("" == "fos");
 
-   BOOST_REQUIRE_EXCEPTION(bidname("bob", "eos", core_sym::from_string("0.0101")),
-                           fc::exception, fc_assert_exception_message_is(bid10_message));
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "fos", core_sym::from_string("1.0101")));
 
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "io", core_sym::from_string("0.1000")));
-
-   BOOST_REQUIRE_EXCEPTION(bidname("bob", "bp", core_sym::from_string("0.1020")),
-                           fc::exception, fc_assert_exception_message_is(bid10_message));
+   produce_block();
+       BOOST_TEST("" == "esi");
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "esi", core_sym::from_string("1.0100")));
+   BOOST_TEST("" == "eoseos");
+   BOOST_TEST("2" == get_producer_info("producer")["url"].as_string());
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "eoseos", core_sym::from_string("1.0100")));
+   BOOST_TEST("" == "io");
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "io", core_sym::from_string("3.1000")));
+   BOOST_TEST("" == "bp");
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "bp", core_sym::from_string("1.0100")));
 
    produce_block(fc::days(14));
    produce_block();
