@@ -54,16 +54,18 @@ enum withdraw_state : uint64_t {
 ////////////////////////
 // private funcs
 ////////////////////////
-void pegtoken::verify_address(symbol_code sym_code, string addr)
+void pegtoken::verify_address(name style, string addr)
 {
-    if (sym_code == symbol_code("BTC")) {
+    if (style == "bitcoin"_n) {
         eosio_assert(valid_bitcoin_addr(addr), "invalid bitcoin addr");
-    } else if (sym_code == symbol_code("ETH")) {
+    } else if (style == "ethereum"_n) {
         eosio_assert(valid_ethereum_addr(addr), "invalid ethereum addr");
-    } else if (sym_code == symbol_code("EOS")) {
+    } else if (style == "eosio"_n) {
         auto _ = name(addr);
-    } else {
-        eosio_assert(false, "only EOS, BTC and ETH supported");
+    } else if ( style == "other"_n ){
+         // no check
+      } else {
+        eosio_assert(false, "only EOS, BTC and ETH supported. address style must be one of bitcoin, ethereum, eosio or other");
     }
 }
 
@@ -112,7 +114,7 @@ void pegtoken::add_balance(name owner, asset value, name ram_payer)
 // actions
 ////////////////////////
 
-void pegtoken::create(name issuer, symbol sym)
+void pegtoken::create(name issuer, symbol sym, name address_style)
 {
     require_auth(get_self());
 
@@ -121,6 +123,9 @@ void pegtoken::create(name issuer, symbol sym)
 
     auto stats_table = stats(get_self(), sym.code().raw());
     eosio_assert(stats_table.find(sym.code().raw()) == stats_table.end(), "token with symbol already exists");
+    eosio_assert( address_style == "bitcoin"_n || address_style == "ethereum"_n ||
+                    address_style == "eosio"_n || address_style == "other"_n, 
+                    "address_style must be one of bitcoin, ethereum, eosio or other" );
 
     volatile auto tmp = stats_table.template get_index<"issuer"_n>();
 
@@ -137,6 +142,7 @@ void pegtoken::create(name issuer, symbol sym)
         p.service_fee_rate = 0;
         p.issuer = issuer;
         p.acceptor = issuer;
+        p.address_style = address_style;
         p.active = true;
     });
 
@@ -332,18 +338,16 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
 
     STRING_LEN_CHECK(address, 64)
 
-    {
-        ACCOUNT_EXCLUDE(to, sym_code.raw())
-        require_auth(iter->acceptor);
-    }
+    ACCOUNT_EXCLUDE(to, sym_code.raw())
+    require_auth(iter->acceptor);
 
-    //verify_address(sym_code, address);
+    // verify_address(iter->address_style, address);
 
     auto addresses = addrs(get_self(), sym_code.raw());
 
     auto addr = addresses.template get_index<"addr"_n>();
-    auto iter = addr.find(hash64(address));
-    eosio_assert(iter == addr.end(), ("this address " + address + " has been assigned to " + iter->owner.to_string()).c_str());
+    auto iter1 = addr.find(hash64(address));
+    eosio_assert(iter1 == addr.end(), ("this address " + address + " has been assigned to " + iter1->owner.to_string()).c_str());
 
     auto iter2 = addresses.find(to.value);
     if (iter2 == addresses.end()) {
@@ -354,7 +358,6 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
             p.state = 0;
         });
     } else {
-        print("modify");
         addresses.modify(iter2, same_payer, [&](auto& p) {
             p.address = address;
             p.assign_time = time_point_sec(now());
@@ -389,7 +392,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
    //总额不足以支付矿工费和服务费
     eosio_assert(residue.amount > 0, "quantity not greater than the sum of miner_fee and service_fee");
 
-    //verify_address(quantity.symbol.code(), to);
+    // verify_address(iter->address_style, to);
 
     auto stt = statistics(get_self(), quantity.symbol.code().raw());
     auto iter2 = stt.find(from.value);
