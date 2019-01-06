@@ -17,9 +17,7 @@ class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 public:
     using contract::contract;
 
-    [[eosio::action]] void create(name issuer, symbol sym, name address_style);
-
-    [[eosio::action]] void init(symbol_code sym_code, string organization, string website, name acceptor);
+    [[eosio::action]] void create(name issuer, symbol sym, name address_style, string organization, string website, name acceptor);
 
     [[eosio::action]] void update(symbol_code sym_code, string organization, string website);
 

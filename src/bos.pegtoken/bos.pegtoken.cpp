@@ -114,15 +114,24 @@ void pegtoken::add_balance(name owner, asset value, name ram_payer)
 // actions
 ////////////////////////
 
-void pegtoken::create(name issuer, symbol sym, name address_style)
+void pegtoken::create(name issuer, symbol sym, name address_style, string organization, string website, name acceptor)
 {
     require_auth(get_self());
 
+    STRING_LEN_CHECK(organization, 256)
+    STRING_LEN_CHECK(website, 256)
+
+    ACCOUNT_CHECK(acceptor)
+
     ACCOUNT_CHECK(issuer);
+
     eosio_assert(sym.is_valid(), "invalid symbol");
 
     auto stats_table = stats(get_self(), sym.code().raw());
     eosio_assert(stats_table.find(sym.code().raw()) == stats_table.end(), "token with symbol already exists");
+    auto accp = stats_table.template get_index<"acceptor"_n>();
+    eosio_assert(accp.find(acceptor.value) == accp.end(), "acceptor already in use");
+
     eosio_assert( address_style == "bitcoin"_n || address_style == "ethereum"_n ||
                     address_style == "eosio"_n || address_style == "other"_n, 
                     "address_style must be one of bitcoin, ethereum, eosio or other" );
@@ -141,30 +150,15 @@ void pegtoken::create(name issuer, symbol sym, name address_style)
         p.delayday = 7;
         p.service_fee_rate = 0;
         p.issuer = issuer;
-        p.acceptor = issuer;
+        p.acceptor = acceptor;
         p.address_style = address_style;
+        p.organization = organization;
+        p.website = website;
         p.active = true;
     });
 
     auto syms = symbols(get_self(), get_self().value);
     syms.emplace(get_self(), [&](auto& p) { p.sym = sym; });
-}
-
-void pegtoken::init(symbol_code sym_code, string organization, string website, name acceptor)
-{
-    STRING_LEN_CHECK(organization, 256)
-    STRING_LEN_CHECK(website, 256)
-
-    ACCOUNT_CHECK(acceptor)
-
-    NEED_ISSUER_AUTH(sym_code.raw())
-
-    stats_table.modify(iter, same_payer, [&](auto& p) {
-        p.organization = organization;
-        p.website = website;
-        p.acceptor = acceptor;
-        p.active = true;
-    });
 }
 
 void pegtoken::update(symbol_code sym_code, string organization, string website)
@@ -724,4 +718,4 @@ void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code)
 
 } // namespace eosio
 
-EOSIO_DISPATCH(eosio::pegtoken, (create)(init)(update)(setlimit)(setauditor)(setfee)(issue)(retire)(setpartner)(applyaddr)(assignaddr)(withdraw)(deposit)(transfer)(clear)(feedback)(rollback)(setacceptor)(setdelay)(lockall)(unlockall)(approve)(unapprove)(sendback)(rmwithdraw));
+EOSIO_DISPATCH(eosio::pegtoken, (create)(update)(setlimit)(setauditor)(setfee)(issue)(retire)(setpartner)(applyaddr)(assignaddr)(withdraw)(deposit)(transfer)(clear)(feedback)(rollback)(setacceptor)(setdelay)(lockall)(unlockall)(approve)(unapprove)(sendback)(rmwithdraw));
