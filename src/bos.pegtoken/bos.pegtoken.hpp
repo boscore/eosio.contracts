@@ -71,6 +71,7 @@ private:
     void verify_address(symbol_code sym_code, string address);
     void add_balance(name owner, asset value, name ram_payer);
     void sub_balance(name owner, asset value);
+    asset calculate_service_fee(asset sum, double service_fee_rate, asset min_service_fee);
 
     struct [[eosio::table]] symbol_ts {
         symbol sym;

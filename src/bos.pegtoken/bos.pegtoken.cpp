@@ -82,6 +82,17 @@ void pegtoken::sub_balance(name owner, asset value)
     }
 }
 
+asset pegtoken::calculate_service_fee(asset sum, double service_fee_rate, asset min_service_fee)
+{
+    asset actual_service_fee = sum * service_fee_rate;
+
+    if(actual_service_fee.amount < min_service_fee.amount) {
+        return min_service_fee;
+    } else {
+        return actual_service_fee;
+    }
+}
+
 void pegtoken::add_balance(name owner, asset value, name ram_payer)
 {
     auto acct = accounts(get_self(), owner.value);
@@ -369,17 +380,19 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
     eosio_assert(iter->active, "underwriter is not active");
 
     eosio_assert(quantity >= iter->min_limit, "quantity less than min_limit");
+    eosio_assert(quantity <= iter->max_limit, "quantity greater than max_limit");
+    //总额不足以支付矿工费
+    eosio_assert(quantity > iter->miner_fee, "quantity not greater than miner_fee");
+
+    asset service_fee = calculate_service_fee(quantity - iter->miner_fee, iter->service_fee_rate, iter->min_service_fee);
+    asset residue = quantity - iter->miner_fee - service_fee;
+   //总额不足以支付矿工费和服务费
+    eosio_assert(residue.amount > 0, "quantity not greater than the sum of miner_fee and service_fee");
 
     //verify_address(quantity.symbol.code(), to);
 
-    bool need_check = false;
-
     auto stt = statistics(get_self(), quantity.symbol.code().raw());
     auto iter2 = stt.find(from.value);
-
-    if (quantity > iter->max_limit) {
-        need_check = true;
-    }
 
     if (iter2 == stt.end()) {
         stt.emplace(get_self(), [&](auto& p) {
@@ -392,6 +405,9 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
         });
     } else {
         eosio_assert(iter2->last_time < time_point_sec(now()) - iter->interval_limit, "exceed interval_limit");
+        eosio_assert(iter2->frequency < iter->frequency_limit, "exceed frequency_limit");
+        eosio_assert(iter2->total + quantity <= iter->total_limit, "exceed total_limit");
+
         if (iter2->last_time.utc_seconds / ONE_DAY != now() / ONE_DAY) {
             stt.modify(iter2, same_payer, [&](auto& p) {
                 p.last_time = time_point_sec(now());
@@ -400,9 +416,6 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
                 p.update_time = p.last_time;
             });
         } else {
-            if (iter2->frequency >= iter->frequency_limit || iter2->total + quantity > iter->total_limit) {
-                need_check = true;
-            }
             stt.modify(iter2, same_payer, [&](auto& p) {
                 p.last_time = time_point_sec(now());
                 p.frequency += 1;
@@ -410,6 +423,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
             });
         }
     }
+    
 
     auto accs = accounts(get_self(), from.value);
     auto& owner = accs.get(quantity.symbol.code().raw(), "no balance object found");
@@ -427,7 +441,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
         p.update_time = time_point_sec(now());
         p.create_time = time_point_sec(now());
         p.state = withdraw_state::INITIAL_STATE;
-        p.enable = !need_check;
+        p.enable = true;
         p.auditor = NIL_ACCOUNT;
     });
 }
