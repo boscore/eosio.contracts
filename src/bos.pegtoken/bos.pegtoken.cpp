@@ -110,11 +110,24 @@ void pegtoken::add_balance(name owner, asset value, name ram_payer)
     }
 }
 
+bool pegtoken::balance_check(symbol_code sym_code, name user)
+{
+    auto acct = accounts(get_self(), user.value);
+    auto balance = acct.find(sym_code.raw());
+    return balance == acct.end() || balance->balance.amount == 0;
+}
+
+bool pegtoken::addr_check(symbol_code sym_code, name user)
+{
+    auto addresses = addrs(get_self(), sym_code.raw());
+    return addresses.find(user.value) == addresses.end();
+}
+
 ////////////////////////
 // actions
 ////////////////////////
 
-void pegtoken::create(name issuer, symbol sym, name address_style, string organization, string website, name acceptor)
+void pegtoken::create(symbol sym, name issuer, name acceptor, name address_style, string organization, string website)
 {
     require_auth(get_self());
 
@@ -161,6 +174,9 @@ void pegtoken::create(name issuer, symbol sym, name address_style, string organi
     syms.emplace(get_self(), [&](auto& p) { p.sym = sym; });
 }
 
+
+
+
 void pegtoken::update(symbol_code sym_code, string organization, string website)
 {
     STRING_LEN_CHECK(organization, 256)
@@ -195,6 +211,9 @@ void pegtoken::setauditor(symbol_code sym_code, string action, name auditor)
 
     { NEED_ISSUER_AUTH(sym_code.raw()) };
 
+    eosio_assert(balance_check(sym_code, auditor), "auditor`s balance should be 0");
+    eosio_assert(addr_check(sym_code, auditor), "auditor`s address should be null");
+
     auto auds = auditors(_self, sym_code.raw());
     if (action == "add") {
         eosio_assert(auds.find(auditor.value) == auds.end(), "auditor already exist");
@@ -204,7 +223,7 @@ void pegtoken::setauditor(symbol_code sym_code, string action, name auditor)
     } else if (action == "remove") {
         auto iter = auds.find(auditor.value);
         eosio_assert(iter != auds.end(), ("auditor " + auditor.to_string() + " not exist").c_str());
-        auds.erase(auds.find(auditor.value));
+        auds.erase(iter);
     } else {
         eosio_assert(false, ("invalid action: " + action).c_str());
     }
@@ -290,6 +309,9 @@ void pegtoken::setpartner(symbol_code sym_code, string action, name applicant)
         eosio_assert(applicant != iter->acceptor, "applicant can`t be acceptor");
     }
 
+    eosio_assert(balance_check(sym_code, applicant), "applicant`s balance should be 0");
+    eosio_assert(addr_check(sym_code, applicant), "applicant`s address should be null");
+
     auto appl = applicants(get_self(), sym_code.raw());
     if (action == "add") {
         eosio_assert(appl.find(applicant.value) == appl.end(), "applicant already exist");
@@ -365,7 +387,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
     require_auth(from);
 
     STRING_LEN_CHECK(memo, 256)
-    STRING_LEN_CHECK(to, 256)
+    STRING_LEN_CHECK(to, 64)
 
     eosio_assert(quantity.is_valid(), "invalid quantity");
     eosio_assert(quantity.amount > 0, "must withdraw positive quantity");
@@ -398,14 +420,13 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
             p.frequency = 1;
             p.total = quantity;
             p.update_time = p.last_time;
-            p.update_time = time_point_sec(now());
         });
     } else {
-        eosio_assert(iter2->last_time < time_point_sec(now()) - iter->interval_limit, "exceed interval_limit");
-        eosio_assert(iter2->frequency < iter->frequency_limit, "exceed frequency_limit");
+        eosio_assert(iter2->last_time < time_point_sec(now()) - iter->interval_limit, "operate twice in interval_limit");
+	eosio_assert(iter2->frequency < iter->frequency_limit, "exceed frequency_limit");
         eosio_assert(iter2->total + quantity <= iter->total_limit, "exceed total_limit");
-
-        if (iter2->last_time.utc_seconds / ONE_DAY != now() / ONE_DAY) {
+        
+	if (iter2->last_time.utc_seconds / ONE_DAY != now() / ONE_DAY) {
             stt.modify(iter2, same_payer, [&](auto& p) {
                 p.last_time = time_point_sec(now());
                 p.frequency = 1;
@@ -420,7 +441,6 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
             });
         }
     }
-    
 
     auto accs = accounts(get_self(), from.value);
     auto& owner = accs.get(quantity.symbol.code().raw(), "no balance object found");
@@ -598,9 +618,15 @@ void pegtoken::setacceptor(symbol_code sym_code, name acceptor)
 
     NEED_ISSUER_AUTH(sym_code.raw())
 
+    eosio_assert(balance_check(sym_code, acceptor), "acceptor`s balance should be 0");
+    eosio_assert(addr_check(sym_code, acceptor), "acceptor`s address should be null");
+
     auto acct = accounts(get_self(), acceptor.value);
     auto balance = acct.find(sym_code.raw());
     eosio_assert(balance == acct.end() || balance->balance.amount == 0, "acceptor's balance should be 0");
+
+    auto accp = stats_table.template get_index<"acceptor"_n>();
+    eosio_assert(accp.find(acceptor.value) == accp.end(), "acceptor already in use");
 
     stats_table.modify(iter, same_payer, [&](auto& p) {
         p.acceptor = acceptor;
@@ -709,7 +735,7 @@ void pegtoken::sendback(name auditor, transaction_id_type trx_id, name to, asset
 
 void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code)
 {
-    require_auth(get_self());
+    require_auth2(get_self().value, ("active"_n).value);
     uint128_t sender_id = id;
     cancel_deferred(id);
     auto withd = withdraws(get_self(), sym_code.raw());
