@@ -233,7 +233,6 @@ namespace eosiosystem {
       );
 
       name_bid_table bids(_self, _self.value);
-      static const uint64_t BASE_LENGTH = 4;
 
       if (newname.length() < BASE_LENGTH)
       {

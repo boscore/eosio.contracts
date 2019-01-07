@@ -71,7 +71,7 @@ namespace eosiosystem {
          }
          std::vector<name> names;
          static const int16_t COUNT10 = 10;
-         static const int16_t BASE_LENGTH = 4;
+
          uint16_t deal_count = 0;
 
          if (highest->newname.length() >= BASE_LENGTH)
