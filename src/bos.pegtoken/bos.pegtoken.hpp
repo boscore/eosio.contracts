@@ -17,9 +17,7 @@ class[[eosio::contract("bos.pegtoken")]] pegtoken : public contract
 public:
     using contract::contract;
 
-    [[eosio::action]] void create(name issuer, symbol sym);
-
-    [[eosio::action]] void init(symbol_code sym_code, string organization, string website, name acceptor);
+    [[eosio::action]] void create(symbol sym, name issuer, name acceptor, name address_style, string organization, string website);
 
     [[eosio::action]] void update(symbol_code sym_code, string organization, string website);
 
@@ -68,9 +66,10 @@ public:
     [[eosio::action]] void rmwithdraw(uint64_t id, symbol_code sym_code);
 
 private:
-    void verify_address(symbol_code sym_code, string address);
+    void verify_address(name style, string address);
     void add_balance(name owner, asset value, name ram_payer);
     void sub_balance(name owner, asset value);
+    asset calculate_service_fee(asset sum, double service_fee_rate, asset min_service_fee);
 
     bool balance_check(symbol_code sym_code, name user);
     bool addr_check(symbol_code sym_code, name user);
@@ -198,6 +197,7 @@ private:
         uint64_t delayday;
         name issuer;
         name acceptor;
+        name address_style;
         string organization;
         string website;
         double service_fee_rate;

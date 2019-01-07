@@ -54,16 +54,18 @@ enum withdraw_state : uint64_t {
 ////////////////////////
 // private funcs
 ////////////////////////
-void pegtoken::verify_address(symbol_code sym_code, string addr)
+void pegtoken::verify_address(name style, string addr)
 {
-    if (sym_code == symbol_code("BTC")) {
+    if (style == "bitcoin"_n) {
         eosio_assert(valid_bitcoin_addr(addr), "invalid bitcoin addr");
-    } else if (sym_code == symbol_code("ETH")) {
+    } else if (style == "ethereum"_n) {
         eosio_assert(valid_ethereum_addr(addr), "invalid ethereum addr");
-    } else if (sym_code == symbol_code("EOS")) {
+    } else if (style == "eosio"_n) {
         auto _ = name(addr);
-    } else {
-        eosio_assert(false, "only EOS, BTC and ETH supported");
+    } else if ( style == "other"_n ){
+         // no check
+      } else {
+        eosio_assert(false, "only EOS, BTC and ETH supported. address style must be one of bitcoin, ethereum, eosio or other");
     }
 }
 
@@ -79,6 +81,17 @@ void pegtoken::sub_balance(name owner, asset value)
         acct.modify(from, same_payer, [&](auto& p) {
             p.balance -= value;
         });
+    }
+}
+
+asset pegtoken::calculate_service_fee(asset sum, double service_fee_rate, asset min_service_fee)
+{
+    asset actual_service_fee = sum * service_fee_rate;
+
+    if(actual_service_fee.amount < min_service_fee.amount) {
+        return min_service_fee;
+    } else {
+        return actual_service_fee;
     }
 }
 
@@ -114,15 +127,27 @@ bool pegtoken::addr_check(symbol_code sym_code, name user)
 // actions
 ////////////////////////
 
-void pegtoken::create(name issuer, symbol sym)
+void pegtoken::create(symbol sym, name issuer, name acceptor, name address_style, string organization, string website)
 {
     require_auth(get_self());
 
+    STRING_LEN_CHECK(organization, 256)
+    STRING_LEN_CHECK(website, 256)
+
+    ACCOUNT_CHECK(acceptor)
+
     ACCOUNT_CHECK(issuer);
+
     eosio_assert(sym.is_valid(), "invalid symbol");
 
     auto stats_table = stats(get_self(), sym.code().raw());
     eosio_assert(stats_table.find(sym.code().raw()) == stats_table.end(), "token with symbol already exists");
+    auto accp = stats_table.template get_index<"acceptor"_n>();
+    eosio_assert(accp.find(acceptor.value) == accp.end(), "acceptor already in use");
+
+    eosio_assert( address_style == "bitcoin"_n || address_style == "ethereum"_n ||
+                    address_style == "eosio"_n || address_style == "other"_n, 
+                    "address_style must be one of bitcoin, ethereum, eosio or other" );
 
     volatile auto tmp = stats_table.template get_index<"issuer"_n>();
 
@@ -138,7 +163,10 @@ void pegtoken::create(name issuer, symbol sym)
         p.delayday = 7;
         p.service_fee_rate = 0;
         p.issuer = issuer;
-        p.acceptor = issuer;
+        p.acceptor = acceptor;
+        p.address_style = address_style;
+        p.organization = organization;
+        p.website = website;
         p.active = true;
     });
 
@@ -146,26 +174,8 @@ void pegtoken::create(name issuer, symbol sym)
     syms.emplace(get_self(), [&](auto& p) { p.sym = sym; });
 }
 
-void pegtoken::init(symbol_code sym_code, string organization, string website, name acceptor)
-{
-    STRING_LEN_CHECK(organization, 256)
-    STRING_LEN_CHECK(website, 256)
 
-    ACCOUNT_CHECK(acceptor)
 
-    NEED_ISSUER_AUTH(sym_code.raw())
-
-    auto accp = stats_table.template get_index<"acceptor"_n>();
-    eosio_assert(accp.find(acceptor.value) == accp.end(), "acceptor already in use");
-
-    eosio_assert(iter->acceptor == iter->issuer, "already initted");
-    stats_table.modify(iter, same_payer, [&](auto& p) {
-        p.organization = organization;
-        p.website = website;
-        p.acceptor = acceptor;
-        p.active = true;
-    });
-}
 
 void pegtoken::update(symbol_code sym_code, string organization, string website)
 {
@@ -344,18 +354,16 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
 
     STRING_LEN_CHECK(address, 64)
 
-    {
-        ACCOUNT_EXCLUDE(to, sym_code.raw())
-        require_auth(iter->acceptor);
-    }
+    ACCOUNT_EXCLUDE(to, sym_code.raw())
+    require_auth(iter->acceptor);
 
-    //verify_address(sym_code, address);
+    // verify_address(iter->address_style, address);
 
     auto addresses = addrs(get_self(), sym_code.raw());
 
     auto addr = addresses.template get_index<"addr"_n>();
-    auto iter = addr.find(hash64(address));
-    eosio_assert(iter == addr.end(), ("this address " + address + " has been assigned to " + iter->owner.to_string()).c_str());
+    auto iter1 = addr.find(hash64(address));
+    eosio_assert(iter1 == addr.end(), ("this address " + address + " has been assigned to " + iter1->owner.to_string()).c_str());
 
     auto iter2 = addresses.find(to.value);
     if (iter2 == addresses.end()) {
@@ -366,7 +374,6 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
             p.state = 0;
         });
     } else {
-        print("modify");
         addresses.modify(iter2, same_payer, [&](auto& p) {
             p.address = address;
             p.assign_time = time_point_sec(now());
@@ -392,17 +399,19 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
     eosio_assert(iter->active, "underwriter is not active");
 
     eosio_assert(quantity >= iter->min_limit, "quantity less than min_limit");
+    eosio_assert(quantity <= iter->max_limit, "quantity greater than max_limit");
+    //总额不足以支付矿工费
+    eosio_assert(quantity > iter->miner_fee, "quantity not greater than miner_fee");
 
-    //verify_address(quantity.symbol.code(), to);
+    asset service_fee = calculate_service_fee(quantity - iter->miner_fee, iter->service_fee_rate, iter->min_service_fee);
+    asset residue = quantity - iter->miner_fee - service_fee;
+   //总额不足以支付矿工费和服务费
+    eosio_assert(residue.amount > 0, "quantity not greater than the sum of miner_fee and service_fee");
 
-    bool need_check = false;
+    // verify_address(iter->address_style, to);
 
     auto stt = statistics(get_self(), quantity.symbol.code().raw());
     auto iter2 = stt.find(from.value);
-
-    if (quantity > iter->max_limit) {
-        need_check = true;
-    }
 
     if (iter2 == stt.end()) {
         stt.emplace(get_self(), [&](auto& p) {
@@ -414,7 +423,10 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
         });
     } else {
         eosio_assert(iter2->last_time < time_point_sec(now()) - iter->interval_limit, "operate twice in interval_limit");
-        if (iter2->last_time.utc_seconds / ONE_DAY != now() / ONE_DAY) {
+	eosio_assert(iter2->frequency < iter->frequency_limit, "exceed frequency_limit");
+        eosio_assert(iter2->total + quantity <= iter->total_limit, "exceed total_limit");
+        
+	if (iter2->last_time.utc_seconds / ONE_DAY != now() / ONE_DAY) {
             stt.modify(iter2, same_payer, [&](auto& p) {
                 p.last_time = time_point_sec(now());
                 p.frequency = 1;
@@ -422,9 +434,6 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
                 p.update_time = p.last_time;
             });
         } else {
-            if (iter2->frequency >= iter->frequency_limit || iter2->total + quantity > iter->total_limit) {
-                need_check = true;
-            }
             stt.modify(iter2, same_payer, [&](auto& p) {
                 p.last_time = time_point_sec(now());
                 p.frequency += 1;
@@ -449,8 +458,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
         p.update_time = time_point_sec(now());
         p.create_time = time_point_sec(now());
         p.state = withdraw_state::INITIAL_STATE;
-        p.enable = !need_check;
-        p.msg = need_check ? "need review" : "";
+        p.enable = true;
         p.auditor = NIL_ACCOUNT;
     });
 }
@@ -736,4 +744,4 @@ void pegtoken::rmwithdraw(uint64_t id, symbol_code sym_code)
 
 } // namespace eosio
 
-EOSIO_DISPATCH(eosio::pegtoken, (create)(init)(update)(setlimit)(setauditor)(setfee)(issue)(retire)(setpartner)(applyaddr)(assignaddr)(withdraw)(deposit)(transfer)(clear)(feedback)(rollback)(setacceptor)(setdelay)(lockall)(unlockall)(approve)(unapprove)(sendback)(rmwithdraw));
+EOSIO_DISPATCH(eosio::pegtoken, (create)(update)(setlimit)(setauditor)(setfee)(issue)(retire)(setpartner)(applyaddr)(assignaddr)(withdraw)(deposit)(transfer)(clear)(feedback)(rollback)(setacceptor)(setdelay)(lockall)(unlockall)(approve)(unapprove)(sendback)(rmwithdraw));
