@@ -42,7 +42,7 @@ bool valid_bitcoin_addr(string addr)
         return false;
 
 #ifdef TESTNET
-    if (addr[0] != '2' && addr[0] != '9')
+    if (addr[0] != '2' && addr[0] != '9' && addr[0] != 'm' && addr[0] != 'n')
         return false;
 #else
     if (addr[0] != '1' && addr[0] != '3')
