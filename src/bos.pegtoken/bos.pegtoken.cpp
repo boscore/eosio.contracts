@@ -386,28 +386,26 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
 {
     require_auth(from);
 
-    STRING_LEN_CHECK(memo, 256)
-    STRING_LEN_CHECK(to, 64)
-
-    eosio_assert(quantity.is_valid(), "invalid quantity");
-    eosio_assert(quantity.amount > 0, "must withdraw positive quantity");
-
     auto sym = quantity.symbol;
 
     ACCOUNT_EXCLUDE(from, quantity.symbol.code().raw())
 
     eosio_assert(iter->active, "underwriter is not active");
 
-    eosio_assert(quantity >= iter->min_limit, "quantity less than min_limit");
-    eosio_assert(quantity <= iter->max_limit, "quantity greater than max_limit");
+    eosio_assert(quantity.is_valid(), "invalid quantity");
+    eosio_assert(quantity.amount > 0, "must withdraw positive quantity");
     //总额不足以支付矿工费
-    eosio_assert(quantity > iter->miner_fee, "quantity not greater than miner_fee");
+    eosio_assert(quantity > iter->miner_fee, ("quantity\t" + quantity.to_string() + "\tnot greater than miner_fee").c_str());
 
     asset service_fee = calculate_service_fee(quantity - iter->miner_fee, iter->service_fee_rate, iter->min_service_fee);
     asset residue = quantity - iter->miner_fee - service_fee;
    //总额不足以支付矿工费和服务费
-    eosio_assert(residue.amount > 0, "quantity not greater than the sum of miner_fee and service_fee");
+    eosio_assert(residue.amount > 0, ("quantity\t" + quantity.to_string() + "\tnot greater than the sum of miner_fee\t" + (iter->miner_fee).to_string() + "\tand service_fee\t" + service_fee.to_string()).c_str());
+    eosio_assert(residue >= iter->min_limit, ("residue\t" + residue.to_string() + "\tless than min_limit\t" + (iter->min_limit).to_string()).c_str());
+    eosio_assert(residue <= iter->max_limit, ("residue\t " + residue.to_string() + "\tgreater than max_limit\t" + (iter->max_limit).to_string()).c_str());
 
+    STRING_LEN_CHECK(memo, 256)
+    STRING_LEN_CHECK(to, 64)
     // verify_address(iter->address_style, to);
 
     auto stt = statistics(get_self(), quantity.symbol.code().raw());
