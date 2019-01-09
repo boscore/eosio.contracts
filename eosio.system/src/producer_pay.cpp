@@ -58,9 +58,13 @@ namespace eosiosystem {
          for (auto &n : ns)
          {
             auto highest = bids.find(n.value);
+            if(highest != bids.end())
+            {
+            //  print( highest->last_bid_time.sec_since_epoch(), " dealed high_bid: ", highest->high_bid, " newname: ", name{highest->newname}, "\n" );
             bids.modify(highest, same_payer, [&](auto &b) {
                b.high_bid = -b.high_bid;
             });
+            }
          }
       };
 
@@ -71,7 +75,6 @@ namespace eosiosystem {
          }
          std::vector<name> names;
          static const int16_t COUNT10 = 10;
-
          uint16_t deal_count = 0;
 
          if (highest->newname.length() >= BASE_LENGTH)
@@ -80,16 +83,17 @@ namespace eosiosystem {
          }
 
          names.push_back(highest->newname);
-
+      //   print( highest->last_bid_time.sec_since_epoch(), " deal high_bid: ", highest->high_bid, " newname: ", name{highest->newname}, "\n" );
          for (int16_t i = 0; ++highest != idx.end() && i < COUNT10; i++)
          {
-           
+         //   print( highest->last_bid_time.sec_since_epoch(), " high_bid: ", highest->high_bid, " newname: ", name{highest->newname}, "\n" );
             if (highest->high_bid > 0 &&
                 (current_time_point() - highest->last_bid_time) > microseconds(useconds_per_day) &&
                 highest->newname.length() >= BASE_LENGTH)
             {
                names.push_back(highest->newname);
                deal_count++;
+               // print( highest->last_bid_time.sec_since_epoch(), " deal high_bid: ", highest->high_bid, " newname: ", name{highest->newname}, "\n" );
             }
 
             if (COUNT10 == deal_count)
@@ -112,7 +116,7 @@ namespace eosiosystem {
                 highest->high_bid > 0 &&
                 (current_time_point() - highest->last_bid_time) > microseconds(useconds_per_day) &&
                 _gstate.thresh_activated_stake_time > time_point() &&
-                (current_time_point() - _gstate.thresh_activated_stake_time) > microseconds(14 * useconds_per_day)){
+                (current_time_point() - _gstate.thresh_activated_stake_time) > microseconds(14*useconds_per_day)){
                _gstate.last_name_close = timestamp;
 
                checkbidname(highest, idx);

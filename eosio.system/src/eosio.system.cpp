@@ -243,7 +243,8 @@ namespace eosiosystem {
          if (highest != idx.end() &&
              highest->high_bid > 0)
          {
-           eosio_assert(bid.amount - highest->high_bid > (highest->high_bid / 10), "newname which length is less than 3  must increase bid by 10% than highest bid in all bid ");
+           std::string msg= "newname which length is less than 3  must increase bid by 10% than the highest bid in all bid :current value:"+std::to_string(highest->high_bid );
+           eosio_assert(bid.amount - highest->high_bid > (highest->high_bid / 10),msg.c_str());
          }
       }
 

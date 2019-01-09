@@ -3112,8 +3112,8 @@ try
    // BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
    //                          fc::exception, fc_assert_exception_message_is( not_closed_message ) );
 
-BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
-                             fc::exception, fc_assert_exception_message_is( bid10_message ) );
+// BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
+//                              fc::exception, fc_assert_exception_message_is( bid10_message ) );
 
    // stake enough to go above the 15% threshold
    stake_with_transfer(config::system_account_name, "alice", core_sym::from_string("10000000.0000"), core_sym::from_string("10000000.0000"));
@@ -3145,13 +3145,17 @@ BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
 
    produce_block();
    string namesubstr = "";
+    uint64_t percent =10;
    auto bidnamebylength = [&](const string &str) {
       const string cstr = str;
       int len = str.length();
+      BOOST_TEST("" ==  std::to_string(len));
       string symstr = "1.";
-
-      symstr += std::to_string(len - 1)+"000";
-      BOOST_REQUIRE_EQUAL(success(),
+      percent = 10;
+      std::string strp = std::to_string(percent)+"00000";
+      symstr += strp.substr(0,4);
+      BOOST_TEST("" == str);
+      BOOST_CHECK_EQUAL(success(),
                           bidname("bob", name(cstr), core_sym::from_string(symstr)));
       // for (int i = 0; i < len; i++)
       // {
@@ -3163,11 +3167,14 @@ BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
       // }
    };
 
+ 
+
+
    // start bids
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "a", core_sym::from_string("1.0000")));
+                       bidname("bob", "a", core_sym::from_string("0.0001")));
    BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "ab", core_sym::from_string("2.0000")));
+                       bidname("bob", "ab", core_sym::from_string("0.0011")));
    BOOST_REQUIRE_EQUAL(success(),
                        bidname("bob", "xyz", core_sym::from_string("3.0033")));
    string basestr = "abcdefghijk";
@@ -3206,7 +3213,7 @@ BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
          namesubstr = cstr;
          // namesubstr += std::string(1, 'z' - i);
          BOOST_TEST("" == namesubstr);
-         create_account_with_resources(name(namesubstr), N(bob));
+         BOOST_CHECK_EQUAL(nullptr,create_account_with_resources(name(namesubstr), N(bob)) );
       }
    };
 
@@ -3216,28 +3223,32 @@ BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
       createnamebylength(namesubstr);
    }
 
-   createnamebylength("abab");
-   createnamebylength("bcbc");
+   // createnamebylength("abab");
+   // createnamebylength("bcbc");
+   // BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(a), N(bob)),
+   //                         fc::exception, fc_assert_exception_message_is(not_closed_message));
 
    createnamebylength("xyz");
 
-   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(a), N(bob)),
-                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+   // BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(a), N(bob)),
+   //                         fc::exception, fc_assert_exception_message_is(not_closed_message));
 
    ////=================================full great then four deal
 
    // start bids
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "uvw", core_sym::from_string("10.0033")));
-   basestr = "xbcdefghijk";
-   BOOST_REQUIRE_EQUAL(success(),
+    basestr = "xbcdefghijk";
+
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "uvw", core_sym::from_string("1.0033")));
+  
+   BOOST_CHECK_EQUAL(success(),
                        bidname("bob", name(basestr), core_sym::from_string("1.0010")));
 
-   BOOST_REQUIRE_EQUAL(success(),
+   BOOST_CHECK_EQUAL(success(),
                        bidname("bob", "xbab", core_sym::from_string("1.0001")));
-   BOOST_REQUIRE_EQUAL(success(),
+   BOOST_CHECK_EQUAL(success(),
                        bidname("bob", "xcbc", core_sym::from_string("1.0002")));
-   BOOST_REQUIRE_EQUAL(success(),
+   BOOST_CHECK_EQUAL(success(),
                        bidname("bob", "opqr", core_sym::from_string("1.0000")));
    for (int i = 4; i < basestr.length(); i++)
    {
@@ -3264,36 +3275,56 @@ BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(ad), N(david) ),
       createnamebylength(namesubstr);
    }
 
-   createnamebylength("xbab");
-   createnamebylength("xcbc");
+   // createnamebylength("xbab");
+   // createnamebylength("xcbc");
 
    // createnamebylength("uvw");
 
-   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(uvw), N(bob)),
-                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+   // BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(uvw), N(bob)),
+   //                         fc::exception, fc_assert_exception_message_is(not_closed_message));
 
-   BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(opqr), N(bob)),
-                           fc::exception, fc_assert_exception_message_is(not_closed_message));
+   // BOOST_REQUIRE_EXCEPTION(create_account_with_resources(N(opqr), N(bob)),
+   //                         fc::exception, fc_assert_exception_message_is(not_closed_message));
 
    ////=================================full less then four deal
 
    // start bids
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "rst", core_sym::from_string("3.0033")));
    basestr = "ybcdefghijk";
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "opq", core_sym::from_string("4.0010")));
+  
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "ybab", core_sym::from_string("0.0001")));
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "ycbc", core_sym::from_string("0.0001")));
 
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "ybab", core_sym::from_string("1.0001")));
-   BOOST_REQUIRE_EQUAL(success(),
-                       bidname("bob", "ycbc", core_sym::from_string("1.0001")));
+  uint64_t percentx =2000000;
+   auto bidnamebylengthx = [&](const string &str) {
+      const string cstr = str;
+      int len = str.length();
+      BOOST_TEST("" ==  std::to_string(len));
+      string symstr = "2.";
+      percentx = percentx*1200/1000000;
+      std::string strp = std::to_string(percentx-20000)+"00000";
+      symstr += strp.substr(0,4);
+      BOOST_TEST("" == str);
+      BOOST_TEST("" == symstr);
+      BOOST_CHECK_EQUAL(success(),
+                          bidname("bob", name(cstr), core_sym::from_string(symstr)));
+ 
+   };
 
    for (int i = 0; i < basestr.length() - 2; i++)
    {
       namesubstr = basestr.substr(i, 3);
-      bidnamebylength(namesubstr);
+      bidnamebylengthx(namesubstr);
    }
+
+   BOOST_TEST("1" == "rst");
+   BOOST_CHECK_EQUAL(success(),
+                     bidname("bob", "rst", core_sym::from_string("2.0033")));
+
+   BOOST_TEST("1" == "opq");
+   BOOST_CHECK_EQUAL(success(),
+                       bidname("bob", "opq", core_sym::from_string("4.0110")));
 
    produce_block(fc::hours(24));
    // fc::mutable_variant_object obj = fc::mutable_variant_object()( "alice1111111","a" );
