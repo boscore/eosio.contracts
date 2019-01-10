@@ -217,9 +217,9 @@ namespace eosiosystem {
    void validate_bos_vesting( int64_t stake ) {
       // const int64_t base_time = 1527811200; /// 2018-06-01 08:00
       // const int64_t max_claimable = 100'000'000'0000ll;
-      const int64_t base_time = 1544587932000; /// 2018-12-12 12:12:12
-      const int64_t max_claimable = 90'000'000'0000ll;
-      const int64_t claimable = int64_t(max_claimable * double(now()-base_time) / (10*seconds_per_year) );
+      const int64_t base_time = 1547654400000; /// 2019-01-17 00:00:00
+      const int64_t max_claimable = 200'000'000'0000ll;
+      const int64_t claimable = int64_t(max_claimable * double(now()-base_time) / (4*seconds_per_year) );
 
       eosio_assert( max_claimable - claimable <= stake, "bos can only claim their tokens over 10 years" );
    }

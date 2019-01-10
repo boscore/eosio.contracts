@@ -33,6 +33,12 @@ namespace eosiosystem {
       // is eventually completely removed, at which point this line can be removed.
       _gstate2.last_block_num = timestamp;
 
+      static const uint32_t min_activated_block_num = 1000000;
+      if (timestamp.slot>= min_activated_block_num && _gstate.thresh_activated_stake_time == time_point())
+      {
+         _gstate.thresh_activated_stake_time = current_time_point();
+      }
+
       /** until activated stake crosses this threshold no new rewards are paid */
       if( _gstate.total_activated_stake < min_activated_stake )
          return;
