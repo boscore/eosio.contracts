@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sha3.h"
 #include <algorithm>
 #include <cstdio>
 #include <eosiolib/crypto.h>
@@ -13,7 +14,7 @@ using std::string;
 
 constexpr char hex_map[] = "0123456789abcdef";
 
-uint8_t hex_to_digit(char ch)
+inline uint8_t hex_to_digit(char ch)
 {
     if (ch >= '0' && ch <= '9')
         return ch - '0';
@@ -36,6 +37,35 @@ string decode_hex(const void* data, uint64_t len)
     return str;
 }
 
+bool unbase58(const char* s, unsigned char* out)
+{
+    static const char* tmpl = "123456789"
+                              "ABCDEFGHJKLMNPQRSTUVWXYZ"
+                              "abcdefghijkmnopqrstuvwxyz";
+    int i, j, c;
+    const char* p;
+
+    memset(out, 0, 25);
+    for (i = 0; s[i]; i++) {
+        if (!(p = std::strchr(tmpl, s[i])))
+            return false;
+
+        c = p - tmpl;
+        for (j = 25; j--;) {
+            c += 58 * out[j];
+            out[j] = c % 256;
+            c /= 256;
+        }
+
+        // address too long
+        if (c)
+            return false;
+    }
+
+    return true;
+}
+
+// see http://rosettacode.org/wiki/Bitcoin/address_validation#C
 bool valid_bitcoin_addr(string addr)
 {
     if (addr.size() < 26 || addr.size() > 35)
@@ -45,33 +75,48 @@ bool valid_bitcoin_addr(string addr)
     if (addr[0] != '2' && addr[0] != '9' && addr[0] != 'm' && addr[0] != 'n')
         return false;
 #else
-    if (addr[0] != '1' && addr[0] != '3')
+    string bc1("bc1");
+    if (addr[0] != '1' && addr[0] != '3'
+        && std::mismatch(bc1.begin(), bc1.end(), addr.begin()).first != bc1.end())
         return false;
 #endif
 
-    auto npos = string::npos;
-    if (addr.find('O') != npos || addr.find('I') != npos || addr.find('l') != npos || addr.find('0') != npos)
+    unsigned char dec[32];
+    if (!unbase58(addr.c_str(), dec))
         return false;
 
-    return true;
+    capi_checksum256 tmp, res;
+    sha256(reinterpret_cast<const char*>(dec), 21, &tmp);
+    sha256(reinterpret_cast<const char*>(tmp.hash), 32, &res);
+    return std::memcmp(dec + 21, res.hash, 4) ? false : true;
 }
 
 bool valid_ethereum_addr(string addr)
 {
-    eosio_assert(addr.size() % 2 == 0, "invalid eth addr");
-
     auto prefix_index = addr.find("0x");
     if (prefix_index == 0)
         addr = addr.substr(prefix_index + 2);
 
     eosio_assert(addr.size() == 40, "invalid eth adr len, expected: 40");
 
-    for (auto& r : addr) {
-        if ((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F'))
-            continue;
-        return false;
+    auto origin_addr = addr;
+
+    std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+
+    uint8_t buf[addr.length()];
+    int i = 0;
+    for (auto& r : addr)
+        buf[i++] = r;
+    uint8_t out[32];
+
+    keccak_256(out, sizeof(out), buf, addr.length());
+
+    auto mask = decode_hex(out, sizeof(out));
+    for (int i = 0; i < addr.size(); ++i) {
+        addr[i] = (hex_to_digit(mask[i]) > 7) ? ::toupper(addr[i]) : ::tolower(addr[i]);
     }
-    return true;
+
+    return addr == origin_addr;
 }
 
 capi_checksum256 get_trx_id()
