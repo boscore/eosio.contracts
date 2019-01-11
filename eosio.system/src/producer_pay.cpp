@@ -31,10 +31,13 @@ namespace eosiosystem {
       // _gstate2.last_block_num is not used anywhere in the system contract code anymore.
       // Although this field is deprecated, we will continue updating it for now until the last_block_num field
       // is eventually completely removed, at which point this line can be removed.
+      if(_gstate2.last_block_num == time_point())
+      {
       _gstate2.last_block_num = timestamp;
+      }
 
       static const uint32_t min_activated_block_num = 1000000;
-      if (timestamp.slot>= min_activated_block_num && _gstate.thresh_activated_stake_time == time_point())
+      if (timestamp.slot-_gstate2.last_block_num.slot>= min_activated_block_num && _gstate.thresh_activated_stake_time == time_point())
       {
          _gstate.thresh_activated_stake_time = current_time_point();
       }

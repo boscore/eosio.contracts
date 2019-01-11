@@ -2456,6 +2456,8 @@ BOOST_FIXTURE_TEST_CASE(producers_upgrade_system_contract, eosio_system_tester) 
 
 } FC_LOG_AND_RETHROW()
 
+
+
 BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
 
    const asset large_asset = core_sym::from_string("80.0000");
@@ -3051,6 +3053,66 @@ BOOST_FIXTURE_TEST_CASE( namebid_pending_winner, eosio_system_tester ) try {
 } FC_LOG_AND_RETHROW()
 
 ///bos begin=====================================
+
+BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_blocknum, eosio_system_tester ) try {
+
+   const std::string not_closed_message("auction for name is not closed yet");
+
+   std::vector<account_name> accounts = { N(alice), N(bob), N(carl), N(david), N(eve) };
+   create_accounts_with_resources( accounts );
+   for ( const auto& a: accounts ) {
+      transfer( config::system_account_name, a, core_sym::from_string( "10000.0000" ) );
+      BOOST_REQUIRE_EQUAL( core_sym::from_string( "10000.0000" ), get_balance(a) );
+   }
+   create_accounts_with_resources( { N(producer) } );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( N(producer) ) );
+
+   produce_block();
+   // stake but but not enough to go live
+   stake_with_transfer( config::system_account_name, "bob",  core_sym::from_string( "3500.0000" ), core_sym::from_string( "3500.0000" ) );
+   stake_with_transfer( config::system_account_name, "carl", core_sym::from_string( "3500.0000" ), core_sym::from_string( "3500.0000" ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( N(bob), { N(producer) } ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( N(carl), { N(producer) } ) );
+
+   // start bids
+
+   // david outbids carl on prefd
+   {
+      // BOOST_REQUIRE_EQUAL( core_sym::from_string( "9998.0000" ), get_balance("carl") );
+      // BOOST_REQUIRE_EQUAL( core_sym::from_string( "10000.0000" ), get_balance("david") );
+      BOOST_REQUIRE_EQUAL( success(),
+                           bidname( "david", "prefd", core_sym::from_string("1.9900") ) );
+      // BOOST_REQUIRE_EQUAL( core_sym::from_string( "9999.0000" ), get_balance("carl") );
+      // BOOST_REQUIRE_EQUAL( core_sym::from_string( "9998.0100" ), get_balance("david") );
+   }
+
+
+   // produce_block( fc::days(14) );
+   produce_block();
+
+   // // highest bid is from david for prefd but no bids can be closed yet
+   // BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefd), N(david) ),
+   //                          fc::exception, fc_assert_exception_message_is( not_closed_message ) );
+
+   // stake enough to go above the 15% threshold
+   stake_with_transfer( config::system_account_name, "alice", core_sym::from_string( "1000.0000" ), core_sym::from_string( "1000.0000" ) );
+   // BOOST_REQUIRE_EQUAL(0, get_producer_info("producer")["unpaid_blocks"].as<uint32_t>());
+   BOOST_REQUIRE_EQUAL( success(), vote( N(alice), { N(producer) } ) );
+
+   // need to wait for 14 days after going live
+   produce_blocks(10);
+   produce_block( fc::days(2) );
+   produce_blocks( 10 );
+   BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefd), N(david) ),
+                            fc::exception, fc_assert_exception_message_is( not_closed_message ) );
+   // it's been 14 days, auction for prefd has been closed
+   // produce_block( fc::days(12) );
+   create_account_with_resources( N(prefd), N(david) );
+   produce_blocks(2);
+   produce_block( fc::hours(23) );
+
+} FC_LOG_AND_RETHROW()
+
 BOOST_FIXTURE_TEST_CASE(multiple_namebidsbylength, eosio_system_tester)
 try
 {
