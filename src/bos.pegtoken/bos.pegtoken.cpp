@@ -357,7 +357,7 @@ void pegtoken::assignaddr(symbol_code sym_code, name to, string address)
     ACCOUNT_EXCLUDE(to, sym_code.raw())
     require_auth(iter->acceptor);
 
-    // verify_address(iter->address_style, address);
+    verify_address(iter->address_style, address);
 
     auto addresses = addrs(get_self(), sym_code.raw());
 
@@ -406,7 +406,7 @@ void pegtoken::withdraw(name from, string to, asset quantity, string memo)
 
     STRING_LEN_CHECK(memo, 256)
     STRING_LEN_CHECK(to, 64)
-    // verify_address(iter->address_style, to);
+    verify_address(iter->address_style, to);
 
     auto stt = statistics(get_self(), quantity.symbol.code().raw());
     auto iter2 = stt.find(from.value);
