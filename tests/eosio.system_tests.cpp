@@ -9,6 +9,7 @@
 #include <fc/log/logger.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <Runtime/Runtime.h>
+#include <thread>
 
 #include "eosio.system_tester.hpp"
 struct _abi_hash {
@@ -3054,7 +3055,7 @@ BOOST_FIXTURE_TEST_CASE( namebid_pending_winner, eosio_system_tester ) try {
 
 ///bos begin=====================================
 
-BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_blocknum, eosio_system_tester ) try {
+BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_timestamp, eosio_system_tester ) try {
 
    const std::string not_closed_message("auction for name is not closed yet");
 
@@ -3107,6 +3108,23 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_blocknum, eos
                             fc::exception, fc_assert_exception_message_is( not_closed_message ) );
    // it's been 14 days, auction for prefd has been closed
    // produce_block( fc::days(12) );
+   
+   // time_point ii = time_point::from_iso_string( "2019-01-13T14:05:00" );
+   // BOOST_TEST(9 == ii.sec_since_epoch());
+  static const int64_t min_activated_time = 1547303280000000; /// 2019-01-13 20:30:00
+   const static time_point at{ microseconds{ static_cast<int64_t>( min_activated_time) } };
+// time_point at = time_point::from_iso_string( "2019-01-12T14:18:00" );
+     while(time_point::now() < at)
+    {
+         BOOST_TEST(9 == time_point::now().sec_since_epoch());
+           BOOST_TEST(9 == at.sec_since_epoch());
+         sleep(10);
+    }
+
+   const auto     initial_global_state      = get_global_state();
+   const uint64_t initial_activated_time        = microseconds_since_epoch_of_iso_string( initial_global_state["thresh_activated_stake_time"] );
+   BOOST_TEST(9 == initial_activated_time);
+
    create_account_with_resources( N(prefd), N(david) );
    produce_blocks(2);
    produce_block( fc::hours(23) );

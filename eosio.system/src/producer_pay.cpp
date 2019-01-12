@@ -31,19 +31,18 @@ namespace eosiosystem {
       // _gstate2.last_block_num is not used anywhere in the system contract code anymore.
       // Although this field is deprecated, we will continue updating it for now until the last_block_num field
       // is eventually completely removed, at which point this line can be removed.
-      if(_gstate2.last_block_num == time_point())
-      {
-      _gstate2.last_block_num = timestamp;
-      }
+   
+      static const int64_t min_activated_time = 1547816400000000; /// 2019-01-18 21:00:00
+      const static time_point at{ microseconds{ static_cast<int64_t>( min_activated_time) } };
 
-      static const uint32_t min_activated_block_num = 1000000;
-      if (timestamp.slot-_gstate2.last_block_num.slot>= min_activated_block_num && _gstate.thresh_activated_stake_time == time_point())
+      if (current_time_point() >= at&& _gstate.thresh_activated_stake_time == time_point())
       {
          _gstate.thresh_activated_stake_time = current_time_point();
       }
 
       /** until activated stake crosses this threshold no new rewards are paid */
-      if( _gstate.total_activated_stake < min_activated_stake )
+      // if( _gstate.total_activated_stake < min_activated_stake )
+      if(_gstate.thresh_activated_stake_time == time_point())
          return;
 
       if( _gstate.last_pervote_bucket_fill == time_point() )  /// start the presses
@@ -141,7 +140,9 @@ namespace eosiosystem {
       const auto& prod = _producers.get( owner.value );
       eosio_assert( prod.active(), "producer does not have an active key" );
 
-      eosio_assert( _gstate.total_activated_stake >= min_activated_stake,
+      // eosio_assert( _gstate.total_activated_stake >= min_activated_stake,
+      //               "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
+      eosio_assert( _gstate.thresh_activated_stake_time != time_point(),
                     "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
 
       const auto ct = current_time_point();
