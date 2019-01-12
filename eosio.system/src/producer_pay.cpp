@@ -31,6 +31,7 @@ namespace eosiosystem {
       // _gstate2.last_block_num is not used anywhere in the system contract code anymore.
       // Although this field is deprecated, we will continue updating it for now until the last_block_num field
       // is eventually completely removed, at which point this line can be removed.
+      _gstate2.last_block_num = timestamp;
    
       static const int64_t min_activated_time = 1547816400000000; /// 2019-01-18 21:00:00
       const static time_point at{ microseconds{ static_cast<int64_t>( min_activated_time) } };
