@@ -33,7 +33,7 @@ namespace eosiosystem {
       // is eventually completely removed, at which point this line can be removed.
       _gstate2.last_block_num = timestamp;
    
-      static const int64_t min_activated_time = 1547816400000000; /// 2019-01-18 21:00:00
+      static const int64_t min_activated_time = 1547816400000000; /// 2019-01-18 21:00:00 UTC+8
       const static time_point at{ microseconds{ static_cast<int64_t>( min_activated_time) } };
 
       if (current_time_point() >= at&& _gstate.thresh_activated_stake_time == time_point())

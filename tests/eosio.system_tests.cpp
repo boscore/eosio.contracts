@@ -9,7 +9,7 @@
 #include <fc/log/logger.hpp>
 #include <eosio/chain/exceptions.hpp>
 #include <Runtime/Runtime.h>
-#include <thread>
+
 
 #include "eosio.system_tester.hpp"
 struct _abi_hash {
@@ -3069,7 +3069,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_timestamp, eo
    BOOST_REQUIRE_EQUAL( success(), regproducer( N(producer) ) );
 
    produce_block();
-   // stake but but not enough to go live
+  
    stake_with_transfer( config::system_account_name, "bob",  core_sym::from_string( "3500.0000" ), core_sym::from_string( "3500.0000" ) );
    stake_with_transfer( config::system_account_name, "carl", core_sym::from_string( "3500.0000" ), core_sym::from_string( "3500.0000" ) );
    BOOST_REQUIRE_EQUAL( success(), vote( N(bob), { N(producer) } ) );
@@ -3091,15 +3091,6 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_timestamp, eo
    // produce_block( fc::days(14) );
    produce_block();
 
-   // // highest bid is from david for prefd but no bids can be closed yet
-   // BOOST_REQUIRE_EXCEPTION( create_account_with_resources( N(prefd), N(david) ),
-   //                          fc::exception, fc_assert_exception_message_is( not_closed_message ) );
-
-   // stake enough to go above the 15% threshold
-   stake_with_transfer( config::system_account_name, "alice", core_sym::from_string( "1000.0000" ), core_sym::from_string( "1000.0000" ) );
-   // BOOST_REQUIRE_EQUAL(0, get_producer_info("producer")["unpaid_blocks"].as<uint32_t>());
-   BOOST_REQUIRE_EQUAL( success(), vote( N(alice), { N(producer) } ) );
-
    // need to wait for 14 days after going live
    produce_blocks(10);
    produce_block( fc::days(2) );
@@ -3111,13 +3102,13 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids_check_activated_time_by_timestamp, eo
    
    // time_point ii = time_point::from_iso_string( "2019-01-13T14:05:00" );
    // BOOST_TEST(9 == ii.sec_since_epoch());
-  static const int64_t min_activated_time = 1547303280000000; /// 2019-01-13 20:30:00
+   static const int64_t min_activated_time = 1547303280000000; /// 2019-01-13 20:30:00 UTC+8
    const static time_point at{ microseconds{ static_cast<int64_t>( min_activated_time) } };
-// time_point at = time_point::from_iso_string( "2019-01-12T14:18:00" );
+
      while(time_point::now() < at)
     {
          BOOST_TEST(9 == time_point::now().sec_since_epoch());
-           BOOST_TEST(9 == at.sec_since_epoch());
+         BOOST_TEST(9 == at.sec_since_epoch());
          sleep(10);
     }
 
