@@ -461,7 +461,7 @@ namespace eosiosystem {
       // eosio_assert( _gstate.total_activated_stake >= min_activated_stake,
       //               "cannot undelegate bandwidth until the chain is activated (at least 15% of all tokens participate in voting)" );
       eosio_assert( _gstate.thresh_activated_stake_time != time_point(),
-                    "cannot undelegate bandwidth until the chain is activated (at least 15% of all tokens participate in voting)" );
+                    "cannot undelegate bandwidth until the chain is activated " );
 
 
       changebw( from, receiver, -unstake_net_quantity, -unstake_cpu_quantity, false);

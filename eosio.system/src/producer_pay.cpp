@@ -144,7 +144,7 @@ namespace eosiosystem {
       // eosio_assert( _gstate.total_activated_stake >= min_activated_stake,
       //               "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
       eosio_assert( _gstate.thresh_activated_stake_time != time_point(),
-                    "cannot claim rewards until the chain is activated (at least 15% of all tokens participate in voting)" );
+                    "cannot claim rewards until the chain is activated " );
 
       const auto ct = current_time_point();
 
