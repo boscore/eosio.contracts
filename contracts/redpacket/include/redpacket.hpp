@@ -176,5 +176,9 @@ CONTRACT redpacket: public contract {
         string _get_memo_for_redpacket(uint64_t id);
 
         void _ping();
+
+        name _contract_for_symbol(symbol s);
+
+        uint64_t _min_amount_for_symbol(symbol s);
 };
 

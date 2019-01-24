@@ -13,8 +13,6 @@
 #endif
 
 static constexpr uint32_t MAX_RECEIVER = 100;
-static constexpr uint64_t MIN_AMOUNT = 10;
-static constexpr uint64_t SEND_MIN_AMOUNT = 1000;
 static constexpr uint32_t EXPIRE_TIME = 3600 * 24;
 
 void redpacket::get( name receiver, uint64_t id, signature sig )
@@ -59,11 +57,16 @@ void redpacket::transfer(name from, name to, asset quantity, string memo)
     if (from == _self || to != _self || memo.length() == 0) {
         return;
     }
-    bool is_bos = (_code == BOS_CONTRACT) && (quantity.symbol == BOS_SYMBOL);
-    bool is_eos = (_code == EOS_CONTRACT) && (quantity.symbol == EOS_SYMBOL);
-    eosio_assert(is_bos || is_eos, "unsupported symbol");
-    eosio_assert(quantity.is_valid(), "invalid quantity");
-    eosio_assert(quantity.amount > 0, "must transfer positive quantity");
+    bool is_bos = (_code == BOS_CONTRACT && quantity.symbol == BOS_SYMBOL);
+    bool is_eos = (_code == EOS_CONTRACT && quantity.symbol == EOS_SYMBOL);
+    bool is_uid = (_code == UID_CONTRACT && quantity.symbol == UID_SYMBOL);
+    bool is_btc = (_code == BTC_CONTRACT && quantity.symbol == BTC_SYMBOL);
+    bool is_eth = (_code == ETH_CONTRACT && quantity.symbol == ETH_SYMBOL);
+    bool is_usdt = (_code == USDT_CONTRACT && quantity.symbol == USDT_SYMBOL);
+
+    check(quantity.is_valid(), "invalid quantity");
+    check(quantity.amount > 0, "must transfer positive quantity");
+    check(is_bos || is_eos || is_uid || is_btc || is_eth || is_usdt, "unsupported symbol");
 
     vector<string> params = split(memo, "^");
     eosio_assert(params.size() > 0, "invalid memo");
@@ -90,10 +93,9 @@ void redpacket::transfer(name from, name to, asset quantity, string memo)
         auto id = std::stoull(params[2]);
         auto count = std::stoull(params[3]);
         eosio_assert(count > 0 && count <= MAX_RECEIVER, "illegal receiver count");
-        uint64_t send_min_amount = SEND_MIN_AMOUNT;
-        uint64_t min_amount = MIN_AMOUNT;
+        uint64_t min_amount = _min_amount_for_symbol(quantity.symbol);
+        uint64_t send_min_amount = min_amount * MAX_RECEIVER ;
         eosio_assert(send_min_amount <= quantity.amount, "asset too small");
-        eosio_assert(min_amount * count <= quantity.amount, "asset too small");
 
         auto pubkey = decode_pubkey(params[4]);
         auto sender = decode_name(params[5]);
@@ -204,8 +206,7 @@ void redpacket::_transfer(name from, name to, asset quantity, string memo)
         real_to = name{"uid"};
         real_memo = "tf^" + to.to_string() + "^" + memo;
     }
-    bool is_eos = (quantity.symbol == EOS_SYMBOL);
-    name contract = is_eos ? EOS_CONTRACT : BOS_CONTRACT;
+    name contract = _contract_for_symbol(quantity.symbol);
     action {
         permission_level{ from, name{"active"} },
         contract,
@@ -271,7 +272,7 @@ asset redpacket::_get(name receiver, uint64_t id, signature sig, bool is_create)
             // 期望设置为平均，随机金额为0～2倍平均
             amount_num *= (2.0 / user_remain);
 
-            uint64_t min_amount =  MIN_AMOUNT;
+            uint64_t min_amount = _min_amount_for_symbol(amount_remain.symbol);
             uint64_t min_remain_needed = (user_remain - 1) * min_amount;
             // 如果剩余不够分,期望设置为可取的最大值
             if (amount_num > amount_remain.amount - min_remain_needed) {
@@ -322,8 +323,7 @@ void redpacket::_ping()
 
     debug("delete: ", it->id);
     uint64_t id = it->id;
-    bool is_eos = (it->amount.symbol == EOS_SYMBOL);
-    name contract = is_eos ? EOS_CONTRACT : BOS_CONTRACT;
+    name contract = _contract_for_symbol(it->amount.symbol);
     string memo = _self.to_string() + ": remain balance for redpacket " + std::to_string(id);
     transaction out;
     out.actions.emplace_back(permission_level{_self, name{"active"}},
@@ -338,11 +338,60 @@ void redpacket::_ping()
     idx.erase(it);
 }
 
+name redpacket::_contract_for_symbol(symbol s)
+{
+    name contract;
+
+    if (s == BOS_SYMBOL) {
+        contract = BOS_CONTRACT;
+    } else if (s == EOS_SYMBOL) {
+        contract = EOS_CONTRACT;
+    } else if (s == UID_SYMBOL) {
+        contract = UID_CONTRACT;
+    } else if (s == BTC_SYMBOL) {
+        contract = BTC_CONTRACT;
+    } else if (s == ETH_SYMBOL) {
+        contract = ETH_CONTRACT;
+    } else if (s == USDT_SYMBOL) {
+        contract = USDT_CONTRACT;
+    } else {
+        eosio_assert(false, "unsupported symbol");
+    }
+
+    return contract;
+}
+
+uint64_t redpacket::_min_amount_for_symbol(symbol s)
+{
+    uint64_t min_amount = 0;
+
+    if (s == BOS_SYMBOL) {
+        min_amount = 10;
+    } else if (s == EOS_SYMBOL) {
+        min_amount = 10;
+    } else if (s == UID_SYMBOL) {
+        min_amount = 10;
+    } else if (s == BTC_SYMBOL) {
+        min_amount = 10;
+    } else if (s == ETH_SYMBOL) {
+        min_amount = 1000;
+    } else if (s == USDT_SYMBOL) {
+        min_amount = 100000;
+    } else {
+        eosio_assert(false, "unsupported symbol");
+    }
+
+    return min_amount;
+}
+
+
 #define EOSIO_DISPATCH_CUSTOM( TYPE, MEMBERS ) \
 extern "C" { \
     void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
-        if ( (code == BOS_CONTRACT.value && action == name{"transfer"}.value) || \
-                (code == EOS_CONTRACT.value && action == name{"transfer"}.value) ) { \
+        if ( action == name{"transfer"}.value && \
+                ( code == BOS_CONTRACT.value || code == EOS_CONTRACT.value || \
+                  code == UID_CONTRACT.value || code == BTC_CONTRACT.value || \
+                  code == ETH_CONTRACT.value || code == USDT_CONTRACT.value ) ) { \
             execute_action(name(receiver), name(code), &redpacket::transfer); \
         } else if ( code == receiver ) { \
             switch( action ) { \
