@@ -3999,4 +3999,82 @@ BOOST_FIXTURE_TEST_CASE( buy_pin_sell_ram, eosio_system_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
+BOOST_FIXTURE_TEST_CASE( set_personal_and_homepage, eosio_system_tester ) try {
+   //only owner can call setpersonal
+   BOOST_REQUIRE_EQUAL(error("missing authority of alice1111111"),
+                        push_action( N(bob111111111), N(setpersonal), mvo()
+                                          ("account", "alice1111111")
+                                          ("key", "favorfood")
+                                          ("value", "pizza"))
+   );
+
+   //key length check
+   BOOST_REQUIRE_EQUAL(wasm_assert_msg("key should be less than 12"),
+                        push_action( N(alice1111111), N(setpersonal), mvo()
+                                          ("account", "alice1111111")
+                                          ("key", "tooooooooooolongkey")
+                                          ("value", "somevalue"))
+   );
+
+   //value length check
+   string* long_value=new string(1025,'a');
+   BOOST_REQUIRE_EQUAL(wasm_assert_msg("value should be less than 1024"),
+                        push_action( N(alice1111111), N(setpersonal), mvo()
+                                          ("account", "alice1111111")
+                                          ("key", "somekey")
+                                          ("value",*long_value))
+   );
+
+   //setpersonal should success,and check result
+   BOOST_REQUIRE_EQUAL(success(),
+                        push_action( N(alice1111111), N(setpersonal), mvo()
+                                          ("account", "alice1111111")
+                                          ("key", "favorfood")
+                                          ("value","pizza")
+                        )
+   );
+   auto data=get_personal(N(alice1111111),"favorfood");
+   BOOST_REQUIRE_EQUAL(0,data["readablekey"].as_string().find("favorfood"));
+   BOOST_REQUIRE_EQUAL(0,data["value"].as_string().find("pizza"));
+
+   //setpersonal to other value check
+   BOOST_REQUIRE_EQUAL(success(),
+                        push_action( N(alice1111111), N(setpersonal), mvo()
+                                          ("account", "alice1111111")
+                                          ("key", "favorfood")
+                                          ("value","noodles")
+                        )
+   );
+   data=get_personal(N(alice1111111),"favorfood");
+   BOOST_REQUIRE_EQUAL(0,data["readablekey"].as_string().find("favorfood"));
+   BOOST_REQUIRE_EQUAL(0,data["value"].as_string().find("noodles"));
+
+   //sethomepage check
+   //long url check
+   string *long_url=new string(257,'a');
+   BOOST_REQUIRE_EQUAL(wasm_assert_msg("url is too long"),
+                        push_action( N(alice1111111), N(sethomepage), mvo()
+                                      ("account", "alice1111111")
+                                      ("url",*long_url))
+   );
+
+   //url prefix check
+   string url="abcdefg";
+   BOOST_REQUIRE_EQUAL(wasm_assert_msg("illegal url"),
+                        push_action( N(alice1111111), N(sethomepage), mvo()
+                                          ("account", "alice1111111")
+                                          ("url",url))
+   );
+
+   //sethomepage should success,and check result
+   BOOST_REQUIRE_EQUAL(success(),
+                       push_action( N(alice1111111), N(sethomepage), mvo()
+                                          ("account", "alice1111111")
+                                          ("url","http://somepage.com")
+                       )
+   );
+   data=get_personal(N(alice1111111),"homepage");
+   BOOST_REQUIRE_EQUAL(0,data["value"].as_string().find("http://somepage.com"));
+} FC_LOG_AND_RETHROW()
+
 BOOST_AUTO_TEST_SUITE_END()

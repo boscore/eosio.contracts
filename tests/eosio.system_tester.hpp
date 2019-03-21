@@ -581,6 +581,12 @@ public:
       }
    }
 
+   fc::variant get_personal( const name act,const string key ) {
+      name key_name{key};
+      vector<char> data = get_row_by_account( config::system_account_name, act, N(personaldata), key_name.value );
+      return abi_ser.binary_to_variant( "personal", data, abi_serializer_max_time );
+   }
+
    abi_serializer abi_ser;
    abi_serializer token_abi_ser;
 };

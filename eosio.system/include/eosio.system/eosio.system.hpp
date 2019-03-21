@@ -214,6 +214,20 @@ namespace eosiosystem {
    //   static constexpr uint32_t     max_inflation_rate = 5;  // 5% annual inflation
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
 
+   /*For accounts to store their personal specific key-value data.
+   key needs to be string and follow rules: only contain a-z,0-5,not longer than 12.
+   for the key shorter than 12,will add 0 at higher bits.
+   by doing this we can use key as uint64_t,to save space and easy use.
+   usage: ex. dapp owner can call sethomepage to set its homepage,guiding users to their dapp*/
+   struct [[eosio::table, eosio::contract("eosio.system")]] personal{
+      uint64_t key;
+      std::string readablekey;
+      std::string value;
+      EOSLIB_SERIALIZE(personal,(key)(readablekey)(value))
+      uint64_t primary_key()const { return key; }
+   };
+   typedef eosio::multi_index< "personaldata"_n, personal > personal_table;
+
    class [[eosio::contract("eosio.system")]] system_contract : public native {
       private:
          voters_table            _voters;
@@ -375,6 +389,26 @@ namespace eosiosystem {
 
          [[eosio::action]]
          void bidrefund( name bidder, name newname );
+
+         [[eosio::action]]
+         void setpersonal(name account,std::string key,std::string value);
+
+         [[eosio::action]]
+         void sethomepage(name account,std::string url);
+
+         std::string getpersonal(name account,std::string key){
+            if(key.size()>12){
+               return "";
+            }
+            name key_name{std::string_view(key)};
+            personal_table personal(_self,account.value);
+            auto ite=personal.find(key_name.value);
+            if(ite != personal.end()){
+               return ite->value;
+            }else{
+               return "";
+            }
+         }
 
       private:
          // Implementation details:
