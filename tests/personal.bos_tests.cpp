@@ -67,12 +67,13 @@ BOOST_FIXTURE_TEST_CASE( set_personal_and_homepage, personal_bos_tester ) try {
    );
 
    //value length check
-   string* long_value=new string(1025,'a');
+   string long_value;
+   long_value.assign(1025,'a');
    BOOST_REQUIRE_EQUAL(wasm_assert_msg("value should be less than 1024"),
                         push_action( N(alice), N(setpersonal), mvo()
                                           ("account", "alice")
                                           ("key", "somekey")
-                                          ("value",*long_value))
+                                          ("value",long_value))
    );
 
    //setpersonal should success,and check result
@@ -101,11 +102,12 @@ BOOST_FIXTURE_TEST_CASE( set_personal_and_homepage, personal_bos_tester ) try {
 
    //sethomepage check
    //long url check
-   string *long_url=new string(257,'a');
+   string long_url;
+   long_url.assign(257,'a');
    BOOST_REQUIRE_EQUAL(wasm_assert_msg("url is too long"),
                         push_action( N(alice), N(sethomepage), mvo()
                                       ("account", "alice")
-                                      ("url",*long_url))
+                                      ("url",long_url))
    );
 
    //url prefix check
