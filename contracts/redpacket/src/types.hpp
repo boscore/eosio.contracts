@@ -10,6 +10,7 @@ static constexpr symbol RAM_SYMBOL = symbol("RAM", 0);
 
 static constexpr symbol BOS_SYMBOL = symbol("BOS", 4);
 static constexpr symbol UID_SYMBOL = symbol("UID", 4);
+static constexpr symbol UB_SYMBOL = symbol("UB", 4);
 static constexpr symbol EOS_SYMBOL = symbol("EOS", 4);
 static constexpr symbol BTC_SYMBOL = symbol("BTC", 8);
 static constexpr symbol ETH_SYMBOL = symbol("ETH", 8);
@@ -17,6 +18,7 @@ static constexpr symbol USDT_SYMBOL = symbol("USDT", 8);
 
 static constexpr name BOS_CONTRACT = name{"eosio.token"};
 static constexpr name UID_CONTRACT = name{"uiduiduiduid"};
+static constexpr name UB_CONTRACT = name{"unicorntoken"};
 static constexpr name EOS_CONTRACT = name{"bosibc.io"};
 static constexpr name BTC_CONTRACT = name{"btc.bos"};
 static constexpr name ETH_CONTRACT = name{"eth.bos"};

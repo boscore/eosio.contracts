@@ -4,7 +4,7 @@
 #include "types.hpp"
 #include "murmurhash.hpp"
 
-#define IS_DEBUG true
+#define IS_DEBUG false
 
 #if IS_DEBUG
     #define debug(args...) print(" | ", ##args)
@@ -14,6 +14,10 @@
 
 static constexpr uint32_t MAX_RECEIVER = 100;
 static constexpr uint32_t EXPIRE_TIME = 3600 * 24;
+static constexpr uint64_t COMMON_MIN_AMOUNT = 10;
+static constexpr uint64_t ETH_MIN_AMOUNT = 1000;
+static constexpr uint64_t USDT_MIN_AMOUNT = 100000;
+
 
 void redpacket::get( name receiver, uint64_t id, signature sig )
 {
@@ -60,13 +64,14 @@ void redpacket::transfer(name from, name to, asset quantity, string memo)
     bool is_bos = (_code == BOS_CONTRACT && quantity.symbol == BOS_SYMBOL);
     bool is_eos = (_code == EOS_CONTRACT && quantity.symbol == EOS_SYMBOL);
     bool is_uid = (_code == UID_CONTRACT && quantity.symbol == UID_SYMBOL);
+    bool is_ub = (_code == UB_CONTRACT && quantity.symbol == UB_SYMBOL);
     bool is_btc = (_code == BTC_CONTRACT && quantity.symbol == BTC_SYMBOL);
     bool is_eth = (_code == ETH_CONTRACT && quantity.symbol == ETH_SYMBOL);
     bool is_usdt = (_code == USDT_CONTRACT && quantity.symbol == USDT_SYMBOL);
 
     check(quantity.is_valid(), "invalid quantity");
     check(quantity.amount > 0, "must transfer positive quantity");
-    check(is_bos || is_eos || is_uid || is_btc || is_eth || is_usdt, "unsupported symbol");
+    check(is_bos || is_eos || is_uid || is_ub || is_btc || is_eth || is_usdt, "unsupported symbol");
 
     vector<string> params = split(memo, "^");
     eosio_assert(params.size() > 0, "invalid memo");
@@ -340,58 +345,56 @@ void redpacket::_ping()
 
 name redpacket::_contract_for_symbol(symbol s)
 {
-    name contract;
-
-    if (s == BOS_SYMBOL) {
-        contract = BOS_CONTRACT;
-    } else if (s == EOS_SYMBOL) {
-        contract = EOS_CONTRACT;
-    } else if (s == UID_SYMBOL) {
-        contract = UID_CONTRACT;
-    } else if (s == BTC_SYMBOL) {
-        contract = BTC_CONTRACT;
-    } else if (s == ETH_SYMBOL) {
-        contract = ETH_CONTRACT;
-    } else if (s == USDT_SYMBOL) {
-        contract = USDT_CONTRACT;
-    } else {
-        eosio_assert(false, "unsupported symbol");
+    switch (s.raw()) {
+        case BOS_SYMBOL.raw():
+            return BOS_CONTRACT;
+        case EOS_SYMBOL.raw():
+            return EOS_CONTRACT;
+        case UID_SYMBOL.raw():
+            return UID_CONTRACT;
+        case UB_SYMBOL.raw():
+            return UB_CONTRACT;
+        case BTC_SYMBOL.raw():
+            return BTC_CONTRACT;
+        case ETH_SYMBOL.raw():
+            return ETH_CONTRACT;
+        case USDT_SYMBOL.raw():
+            return USDT_CONTRACT;
+        default:
+            eosio_assert(false, "unsupported symbol");
     }
 
-    return contract;
+    return name{};
 }
 
 uint64_t redpacket::_min_amount_for_symbol(symbol s)
 {
-    uint64_t min_amount = 0;
-
-    if (s == BOS_SYMBOL) {
-        min_amount = 10;
-    } else if (s == EOS_SYMBOL) {
-        min_amount = 10;
-    } else if (s == UID_SYMBOL) {
-        min_amount = 10;
-    } else if (s == BTC_SYMBOL) {
-        min_amount = 10;
-    } else if (s == ETH_SYMBOL) {
-        min_amount = 1000;
-    } else if (s == USDT_SYMBOL) {
-        min_amount = 100000;
-    } else {
-        eosio_assert(false, "unsupported symbol");
+    switch (s.raw()) {
+        case BOS_SYMBOL.raw(): // fall through
+        case EOS_SYMBOL.raw(): // fall through
+        case UID_SYMBOL.raw(): // fall through
+        case UB_SYMBOL.raw():  // fall through
+        case BTC_SYMBOL.raw():
+            return COMMON_MIN_AMOUNT;
+        case ETH_SYMBOL.raw():
+            return ETH_MIN_AMOUNT;
+        case USDT_SYMBOL.raw():
+            return USDT_MIN_AMOUNT;
+        default:
+            eosio_assert(false, "unsupported symbol");
     }
 
-    return min_amount;
+    return 0;
 }
-
 
 #define EOSIO_DISPATCH_CUSTOM( TYPE, MEMBERS ) \
 extern "C" { \
     void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
         if ( action == name{"transfer"}.value && \
                 ( code == BOS_CONTRACT.value || code == EOS_CONTRACT.value || \
-                  code == UID_CONTRACT.value || code == BTC_CONTRACT.value || \
-                  code == ETH_CONTRACT.value || code == USDT_CONTRACT.value ) ) { \
+                  code == UID_CONTRACT.value || code == UB_CONTRACT.value || \
+                  code == BTC_CONTRACT.value || code == ETH_CONTRACT.value || \
+                  code == USDT_CONTRACT.value ) ) { \
             execute_action(name(receiver), name(code), &redpacket::transfer); \
         } else if ( code == receiver ) { \
             switch( action ) { \
