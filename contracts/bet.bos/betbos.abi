@@ -1,0 +1,386 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
+    "structs": [
+        {
+            "name": "bets_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "bet_name",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "bios_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "candidate_name",
+                    "type": "name"
+                },
+                {
+                    "name": "bio",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "candidates_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "candidate_name",
+                    "type": "name"
+                },
+                {
+                    "name": "locked_tokens",
+                    "type": "asset"
+                },
+                {
+                    "name": "total_votes",
+                    "type": "uint64"
+                },
+                {
+                    "name": "is_active",
+                    "type": "bool"
+                },
+                {
+                    "name": "unstaking_end_time_stamp",
+                    "type": "time_point_sec"
+                }
+            ]
+        },
+        {
+            "name": "cleancand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "cleanvoter",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "contr_config",
+            "base": "",
+            "fields": [
+                {
+                    "name": "lockupasset",
+                    "type": "asset"
+                },
+                {
+                    "name": "maxvotes",
+                    "type": "uint8"
+                },
+                {
+                    "name": "numelected",
+                    "type": "uint8"
+                },
+                {
+                    "name": "authaccount",
+                    "type": "name"
+                },
+                {
+                    "name": "auth_threshold_bets",
+                    "type": "uint8"
+                },
+                {
+                    "name": "lockup_release_time_delay",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "firebet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "bet",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "firecand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "newtenure",
+            "base": "",
+            "fields": [
+                {
+                    "name": "candidates",
+                    "type": "name[]"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "registercand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "resign",
+            "base": "",
+            "fields": [
+                {
+                    "name": "bet",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "unstake",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "unvote",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "updatebio",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                },
+                {
+                    "name": "bio",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "updateconfig",
+            "base": "",
+            "fields": [
+                {
+                    "name": "newconfig",
+                    "type": "contr_config"
+                }
+            ]
+        },
+        {
+            "name": "vote",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "candidates",
+                    "type": "name[]"
+                },
+                {
+                    "name": "vote_json",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "votejson_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "vote_json",
+                    "type": "string"
+                },
+                {
+                    "name": "updated_at",
+                    "type": "time_point_sec"
+                }
+            ]
+        },
+        {
+            "name": "votes_row",
+            "base": "",
+            "fields": [
+                {
+                    "name": "voter",
+                    "type": "name"
+                },
+                {
+                    "name": "proxy",
+                    "type": "name"
+                },
+                {
+                    "name": "staked",
+                    "type": "uint64"
+                },
+                {
+                    "name": "candidates",
+                    "type": "name[]"
+                }
+            ]
+        },
+        {
+            "name": "withdrawcand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "cand",
+                    "type": "name"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "cleancand",
+            "type": "cleancand",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "cleanvoter",
+            "type": "cleanvoter",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "firebet",
+            "type": "firebet",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "firecand",
+            "type": "firecand",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "newtenure",
+            "type": "newtenure",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "registercand",
+            "type": "registercand",
+            "ricardian_contract": "**BET Members Code of Ethics**\n\n\nI have consented to act as a BOS Executive Team member, and I agree to comply with the following BET Members’ Code of Ethics throughout my term as a member:\n\n\n**Honesty and Good Faith** – I will act honestly and in good faith. I will do nothing to violate the trust of the community I serve.\n\n\n**Care, Diligence and Skill** – I will exercise the degree of care, diligence and skill of a reasonably prudent person in comparable circumstances. I will make a concerted effort to attend all scheduled BET meetings. I will act responsibly and with due diligence to become familiar with the affairs of the BOS ecosystem.\n\n\n**Conflict of Interest** – I am not currently aware of any actual or potential conflict of interest with respect to the BOS BET team or any matter detrimental to BOS. If I become aware of any conflict, I will immediately disclose it to the Chairpersons. I will not promote my own interests or those of any friend to the detriment of the BOS ecosystem. I will not seek any special benefits or privileges as a BET member. I will act only in the best interests of the BOS ecosystem as a whole and I will not favour the interests of any individual or group of token holders.\n\n\n**Confidentiality** – I will not disclose to any person information decided by the BOS BET members to be confidential or privileged or which reasonably ought to be deemed confidential. When in doubt, I will request determination by a resolution of the Board.\n\n\n**Good Conduct** – At all times, I will conduct myself in a professional and businesslike manner at meetings of the Board. I will approach all Board issues with an open mind, preparing to make the best decisions on behalf of the BOS ecosystem. I will act ethically with integrity. I will deal with others in a respectful manner.\n\n\n**Support** – I will abide by decisions of the Board even though I may disagree, but I reserve the right to express my own views to my community upon non-confidential issues.\n\n\n**Defamation** – I will not make erroneous or defamatory statements about the Board.\n\n\n**Agreement –** I hereby agree to comply with the provisions set out in this BET Members’ Code of Ethics.## BET成员准则\n\n我已同意担任BOS执行团队成员，并且我同意在作为成员的整个任期内认真遵守以下BET成员准则：\n\n - 诚实和诚信 - 我将诚实地行事。不会做任何辜负和有害于我所服务的社区的信任的事情。\n\n - 关心，勤奋和专业 - 我将用勤奋，能力，全心全意地参加和所有的我需要参加的BET相关会议。我将以负责任的态度，尽职尽责地促进BOS生态系统的发展。\n\n - 利益冲突 - 我不会做任何与BOS BET团队有关的实际或潜在利益冲突以及对BOS有害的事。如果我发现任何BET成员有违反利益冲突原则的行为，我会立即向主席报告。我不会为我自己或任何利益相关方而损害BOS生态系统。作为BET成员，我不会寻求任何特殊利益或特权。我的行为只会符合BET的最佳利益。"
+        },
+        {
+            "name": "resign",
+            "type": "resign",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "unstake",
+            "type": "unstake",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "unvote",
+            "type": "unvote",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "updatebio",
+            "type": "updatebio",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "updateconfig",
+            "type": "updateconfig",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "vote",
+            "type": "vote",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "withdrawcand",
+            "type": "withdrawcand",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "bets",
+            "type": "bets_row",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "bios",
+            "type": "bios_row",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "candidates",
+            "type": "candidates_row",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "config",
+            "type": "contr_config",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "votejson",
+            "type": "votejson_row",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "votes",
+            "type": "votes_row",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": []
+}
