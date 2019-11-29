@@ -39,8 +39,8 @@ def get_burnbos_info(actinfo):
         result[0] = G_ERROR
         return result
     # res_json: 
-    #   [0, {u'rows': [{u'account': u'grikovbtvfea', u'is_burned': 0, u'quantity': u'0.5000 BOS'}], u'more': False}]
-    #   [0, {u'rows': [], u'more': False}]
+    #   {u'rows': [{u'account': u'grikovbtvfea', u'is_burned': 0, u'quantity': u'0.5000 BOS'}], u'more': False}
+    #   {u'rows': [], u'more': False}
     if not res_json or 'rows' not in res_json or len(res_json['rows']) == 0:
         result[0] = G_NONEXIST
         return result
