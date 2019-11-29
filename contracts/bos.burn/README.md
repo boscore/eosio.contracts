@@ -248,7 +248,7 @@ cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permissi
 cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
 
 # upgrade eosio.token contract
-cleos set contract eosio.token eosio.token -p eosio -s -j -d > updatetoken.json
+cleos set contract eosio.token eosio.token -p eosio.token -s -j -d > updatetoken.json
 # update updatetoken.json expire time
 cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
 # let BPs approve
