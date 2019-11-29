@@ -24,7 +24,7 @@ cp ./bos-airdrop-snapshots/accounts_info_bos_snapshot.airdrop.normal.csv .
 ```    
 
 使用 [bos.burn](https://github.com/boscore/bos/tree/bos.burn) 分支的 `nodeos` 导出 `auth_sequence=0||auth_sequence=2` 的账户；
-燃烧截止的时间点是 `2019-11-27 03:26:27 UTC-0`，对应块高度为 `54,172,308`，可以使用此时间之前的 `snapshot` 来启动 `bos.burn` 的节点，并指定 ` --netruncate-at-block=54172308`。
+燃烧截止的时间点是 `2019-11-27 03:26:27 UTC-0`，对应块高度为 `54,171,828`，可以使用此时间之前的 `snapshot` 来启动 `bos.burn` 的节点，并指定 ` --netruncate-at-block=54171828`。
 
 比如，docker-compose.yml 可以为：
 ```
@@ -91,8 +91,13 @@ python3 unionset.py
 ### 升级 burn.bos 合约
 
 ```
+git clone https://github.com/boscore/bos.contract-prebuild.git
+
 CONTRACTS_FOLDER='./bos.contract-prebuild' 
-cleos set contract burn.bos ${CONTRACTS_FOLDER}/bos.burn -p burn.bos
+cd ${CONTRACTS_FOLDER}
+git checkout bos.burn && git pull origin bos.burn
+
+cleos set contract burn.bos bos.burn -p burn.bos
 ```
 
 ### burn.bos 导入未激活账户
@@ -119,22 +124,18 @@ _注意：在执行导入之前，请确保 `burn.bos` 资源充足：_
 # resign active
 cleos set account permission burn.bos active '{"threshold": 1,"keys": [],"accounts": [{"permission":{"actor":"burn.bos","permission":"eosio.code"},"weight":1},{"permission":{"actor":"eosio","permission":"active"},"weight":1}]}' owner -p burn.bos@owner
 # resign owner
-cleos set account permission burn.bos owner '{"threshold": 1,"keys": [],"accounts": [{"permission":{"actor":"eosio","permission":"owner"},"weight":1}]}' -p burn.bos@owner
+cleos set account permission burn.bos owner '{"threshold": 1,"keys": [],"accounts": [{"permission":{"actor":"eosio","permission":"active"},"weight":1}]}' -p burn.bos@owner
 ```
 
-社区成员自己生成 `unactive_airdrop_accounts.csv` 可以通过以下命令来与 `burn.bos` 导入数据进行对比：
- `unactive_airdrop_accounts.csv` 放到脚本同一目录下
+社区成员自己生成 `unactive_airdrop_accounts.csv` 可以通过[burnboschecktool.py](https://github.com/boscore/bos.contracts/blob/bos.burn/contracts/bos.burn/scripts/burnboschecktool.py)来与 `burn.bos` 导入数据进行对比：
 
 ```
-python3 vmp.py
+python3 burnboschecktool.py
 ```
-
-输出文件(若合约不存在账户或金额不一致会输出no.csv文件)
-* no.csv
 
 ### 升级 eosio.system 
 
-经过社区共识没有异议以后，需要使用编译版本 [bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn) 中的 `eosio.system` 和 `eosio.token` 合约进行升级。本次以 `eosio.system` 升级为例。
+经过社区共识没有异议以后，需要使用编译版本 [bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn) 中的 `eosio.system` 和 `eosio.token` 合约进行升级。
 
 准备 top 30 的 `bp.json` ：
 ```
@@ -144,11 +145,28 @@ python3 vmp.py
 ]
 ```
 
-发起多签升级 `eosio` 合约：
+发起多签升级系统合约：
 
 ```
 CONTRACTS_FOLDER='./bos.contract-prebuild' 
+cd ${CONTRACTS_FOLDER}
+git checkout bos.burn && git pull origin bos.burn
 
+# upgrade eosio contract
+cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
+# update updatesys.json expire time
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+# let BPs approve
+cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+
+# upgrade eosio.token contract
+cleos set contract eosio.token eosio.token -p eosio -s -j -d > updatetoken.json
+# update updatetoken.json expire time
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+# let BPs approve
+cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
 ```
 
 同时发起 `eosio.system` 和 `eosio.token` 的多签升级，等待 BP 多签通过。
@@ -212,7 +230,29 @@ bash burntool.sh burn
 
 ### 恢复系统合约 
 
-需要使用编译版本 [bos.contract-prebuild/master](https://github.com/boscore/bos.contract-prebuild/tree/master) 中的 `eosio.system` 和 `eosio.token` 合约进行升级，过程参考之前的步骤。
+需要使用编译版本 [bos.contract-prebuild/master](https://github.com/boscore/bos.contract-prebuild/tree/master) 中的 `eosio.system` 和 `eosio.token` 合约进行升级。
+
+```
+CONTRACTS_FOLDER='./bos.contract-prebuild' 
+cd ${CONTRACTS_FOLDER}
+git checkout master && git pull origin master
+
+# upgrade eosio contract
+cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
+# update updatesys.json expire time
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+# let BPs approve
+cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+
+# upgrade eosio.token contract
+cleos set contract eosio.token eosio.token -p eosio -s -j -d > updatetoken.json
+# update updatetoken.json expire time
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+# let BPs approve
+cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
+```
 
 ### 释放 burn.bos 资源
 
@@ -220,12 +260,12 @@ bash burntool.sh burn
 bash burntool.sh clr
 ```
 
-然后发起 BP 多签将 `burn.bos` 的 `active` 权限更新回来：
+然后发起 BP 多签将 `burn.bos` 的 `active` 权限更新回来，用于回收 `burn.bos` 对应的资源：
 
 ```
-cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR", "weight":"1"}], "accounts":[]}' burnbosooooo 366 -p burnbosooooo@active
+cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbosooooo 144 -p burnbosooooo@active
 
-cleos multisig approve burnbosooooo upactive '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@owner
+cleos multisig approve burnbosooooo upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
 
 cleos multisig exec burnbosooooo upactive -p burnbosooooo@active
 ```
