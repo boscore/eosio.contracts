@@ -45,7 +45,12 @@ services:
       - /data/bos/fullnode:/opt/eosio/bin/data-dir
 ```
 
-注：`bos.burn` 分支对应的 Docker Image 为：boscore/burnbos:v1.0.2
+注：
+* `bos.burn` 分支对应的 Docker Image 为：boscore/burnbos:v1.0.2
+* `snapshot` 可以使用 EOSNation 提供的 snapshot-2019-11-26-15-bos.bin.bz2
+* [BlockGo 下载地址](https://osshkbk01.oss-cn-hongkong.aliyuncs.com/bos/mainnet/snapshot-2019-11-26-15-bos.bin.bz2)
+* [EOSNation 下载地址](https://eosn.sfo2.digitaloceanspaces.com/snapshots/snapshot-2019-11-26-15-bos.bin.bz2)
+
 
 可以通过 `get_info` API 来检查 `head` 是否停止到指定高度：
 
@@ -127,7 +132,7 @@ cleos set account permission burn.bos active '{"threshold": 1,"keys": [],"accoun
 cleos set account permission burn.bos owner '{"threshold": 1,"keys": [],"accounts": [{"permission":{"actor":"eosio","permission":"active"},"weight":1}]}' -p burn.bos@owner
 ```
 
-社区成员自己生成 `unactive_airdrop_accounts.csv` 可以通过[burnboschecktool.py](https://github.com/boscore/bos.contracts/blob/bos.burn/contracts/bos.burn/scripts/burnboschecktool.py)来与 `burn.bos` 导入数据进行对比：
+社区成员自己生成 `unactive_airdrop_accounts.csv` 可以通过 [burnboschecktool.py](https://github.com/boscore/bos.contracts/blob/bos.burn/contracts/bos.burn/scripts/burnboschecktool.py) 来与 `burn.bos` 导入数据进行对比：
 
 ```
 python3 burnboschecktool.py
@@ -176,14 +181,11 @@ cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
 ```
 # set burning account: burn.bos
 # burnbosooooo is a common acount
-cleos multisig propose enablebrun bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbosooooo 336 -p  burnbosooooo@active
-
+cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbosooooo 336 -p  burnbosooooo@active
 # review proposal
 cleos multisig review burnbosooooo enablebrun
-
 # approve proposal
 cleos multisig approve burnbosooooo enablebrun  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
-
 # exec proposal
 cleos multisig exec burnbosooooo enablebrun -p burnbosooooo@active
 ```

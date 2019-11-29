@@ -163,7 +163,7 @@ checkresult() {
     status=${result##*is_burned} #结果为 @@@
     status=$(echo $status | tr -d "\]")
     status=$(echo $status | tr -cd "[0-9]")
-    if [[ temp -eq 0 ]]; then
+    if [[ status -eq 0 ]]; then
         echo $1','$2' '$3 >>$result_file
     else
         echo $1 done !
