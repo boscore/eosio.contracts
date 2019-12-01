@@ -138,6 +138,9 @@ cleos set account permission burn.bos owner '{"threshold": 1,"keys": [],"account
 python3 burnboschecktool.py
 ```
 
+BOS主网截止`54171828`高度，需要燃烧的账户文件地址 [unactive_airdrop_accounts.csv](https://github.com/boscore/bos-airdrop-snapshots/blob/master/unactive_airdrop_accounts.csv). 可以使用这个文件进行导入数据对比。
+
+
 ### 升级 eosio.system 
 
 经过社区共识没有异议以后，需要使用编译版本 [bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn) 中的 `eosio.system` 和 `eosio.token` 合约进行升级。
@@ -153,6 +156,8 @@ python3 burnboschecktool.py
 发起多签升级系统合约：
 
 ```
+# burnbosooooo is a common acount
+
 CONTRACTS_FOLDER='./bos.contract-prebuild' 
 cd ${CONTRACTS_FOLDER}
 git checkout bos.burn && git pull origin bos.burn
@@ -178,9 +183,10 @@ cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
 
 ### 开启 `burn.bos` 燃烧
 
+为了保证更加透明和公开，在BP多签允许进行燃烧以后，任何账户都可以发起燃烧动作。
+
 ```
 # set burning account: burn.bos
-# burnbosooooo is a common acount
 cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbosooooo 336 -p  burnbosooooo@active
 # review proposal
 cleos multisig review burnbosooooo enablebrun
@@ -197,7 +203,8 @@ bash burntool.sh air
 ```
 
 _注意：在执行导入之前，请确保 `burn.bos` 资源充足：_
-* RAM，需要购买到 180M RAM；
+* 需要修改 `burn_trigger_act`，指定触发燃烧操作的发起账户
+* RAM，`burn.bos` 需要购买到 140M RAM；
 * CPU 10min；
 * NET 200MB；
 * 整个导入过程应该在3个小时以内完成
@@ -218,14 +225,17 @@ bash burntool.sh air
 
 ### 销毁 hole.bos 余额
 
-获取 `hole.bos` 的余额，比如 40000.0000 BOS，修改 `burntool.sh` 中 `burn_total_quantity` 值：
+获取 `hole.bos` 的余额，比如 40000.0000 BOS，修改提案中的 `quantity` 参数：
 
 ```
-burn_total_quantity="40000.0000 BOS"
-```
-然后执行：
-```
-bash burntool.sh burn
+# burn hole.bos
+cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbosooooo 336 -p  burnbosooooo@active
+# review proposal
+cleos multisig review burnbosooooo holebos
+# approve proposal
+cleos multisig approve burnbosooooo holebos  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+# exec proposal
+cleos multisig exec burnbosooooo holebos -p burnbosooooo@active
 ```
 
 # 收尾

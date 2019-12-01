@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# YOU NEED TO SPECIFY ACCOUNT
+burn_trigger_act=bos.stake2
+
 CONTRACTS_DIR=bos.contract-prebuild/
 WALLET_DIR=~/bosburn-wallet
 
@@ -139,7 +142,7 @@ import_from_csv() {
 
 transferairs() {
     save_ifs_eq
-    cleos -u $http_endpoint push action ${contract_burn} transferairs '["'$1'"]' -p ${contract_burn}
+    cleos -u $http_endpoint push action ${contract_burn} transferair '["'$1'"]' -p ${burn_trigger_act}
     restore_ifs
 }
 
