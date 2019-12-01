@@ -23,7 +23,7 @@ cp ./bos-airdrop-snapshots/accounts_info_bos_snapshot.airdrop.msig.json .
 cp ./bos-airdrop-snapshots/accounts_info_bos_snapshot.airdrop.normal.csv .
 ```    
 
-使用 [bos.burn](https://github.com/boscore/bos/tree/bos.burn) 分支的 `nodeos` 导出 `auth_sequence=0||auth_sequence=2` 的账户；
+使用 [bos.burn](https://github.com/boscore/bos/releases/tag/burn-v1.0.0) `nodeos` 导出 `auth_sequence=0||auth_sequence=2` 的账户；
 燃烧截止的时间点是 `2019-11-27 03:26:27 UTC-0`，对应块高度为 `54,171,828`，可以使用此时间之前的 `snapshot` 来启动 `bos.burn` 的节点，并指定 ` --netruncate-at-block=54171828`。
 
 比如，docker-compose.yml 可以为：
@@ -46,7 +46,7 @@ services:
 ```
 
 注：
-* `bos.burn` 分支对应的 Docker Image 为：boscore/burnbos:v1.0.2
+* `bos.burn` 分支对应的 Docker Image 为：boscore/burnbos:v1.0.0
 * `snapshot` 可以使用 EOSNation 提供的 snapshot-2019-11-26-15-bos.bin.bz2
 * [BlockGo 下载地址](https://osshkbk01.oss-cn-hongkong.aliyuncs.com/bos/mainnet/snapshot-2019-11-26-15-bos.bin.bz2)
 * [EOSNation 下载地址](https://eosn.sfo2.digitaloceanspaces.com/snapshots/snapshot-2019-11-26-15-bos.bin.bz2)
@@ -88,8 +88,8 @@ python3 unionset.py
 
 燃烧合约将会部署在 `burn.bos` 上面，启动以后任何账户都可以触发燃烧。
 
-具有燃烧功能的合约代码：[bos.contracts/bos.burn](https://github.com/boscore/bos.contracts/tree/bos.burn/contracts/bos.burn)  
-对应的编译版本：[bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn)
+具有燃烧功能的合约代码：[bos.contracts/bos.burn](https://github.com/boscore/bos.contracts/tree/bos.burn/contracts/bos.burn)，burn-v1.0.0
+对应的编译版本：[bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn)，burn-v1.0.0
 
 ## 部署合约
 
