@@ -215,7 +215,7 @@ _Note: Before performing the import, make sure that `burn.bos` has sufficient re
 bash burntool.sh chk
 ```
 
-To save the unactive account into `unactive_airdrop_accounts_result.csv`,可以针对这部分账户再次发起燃烧,直到全部成功:
+To save the unactive account into `unactive_airdrop_accounts_result.csv`, we can start to burn ths list of accounts until success:
 
 ```
 mv ./unactive_airdrop_accounts.csv ./unactive_airdrop_accounts.csv.old
