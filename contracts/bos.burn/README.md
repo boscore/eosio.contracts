@@ -122,7 +122,7 @@ _Beware: before importing, make sure `burn.bos` has sufficient resource:_
 * NET 16MB;
 * It should takes 30 minutes to finish whole importing process
 
-### Open to Community for 3 days
+### Open to Community for 24 hours
 
 Alter the permission of `burn.bos` to `eosio`, and start `eosio.code` permission for community verification.
 
