@@ -5,7 +5,7 @@
 1. Generate a list of accounts to be burned
 2. Import the list of accounts to be burned into `burn.bos` contract
 3. Involve community to verifies burning accounts and contract codes
-4. Update burn contract `eosio.system`、`eosio.token` 合约
+4. Update burn contract `eosio.system`、`eosio.token` contract
 5. Execute Burning
 6. End
 
