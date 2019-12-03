@@ -5,7 +5,7 @@
 1. Generate a list of accounts to be burned
 2. Import the list of accounts to be burned into `burn.bos` contract
 3. Involve community to verifies burning accounts and contract codes
-4. Update burn contract `eosio.system`、`eosio.token` contract
+4. Update burn contract `eosio.system`, `eosio.token` contract
 5. Execute Burning
 6. End
 
@@ -88,8 +88,8 @@ Output Files
 
 Burning contract will be deployed on `burn.bos`, any account can trigger burning after initialization
 
-Smart Contract with burning function:[bos.contracts/bos.burn](https://github.com/boscore/bos.contracts/tree/bos.burn/contracts/bos.burn),burn-v1.0.0
-Corresponding Compiled Code:[bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn),burn-v1.0.0
+Smart Contract with burning function:[bos.contracts/bos.burn](https://github.com/boscore/bos.contracts/tree/bos.burn/contracts/bos.burn), burn-v1.0.0
+Corresponding Compiled Code:[bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn), burn-v1.0.0
 
 ## Deploy Contract
 
@@ -116,9 +116,9 @@ bash burntool.sh imp
 ```
 
 _Beware: before importing, make sure `burn.bos` has sufficient resource:_
-* RAM, number of unactivated accounts is less than, we have to purchase 160M RAM；
-* CPU 40s；
-* NET 16MB；
+* RAM, number of unactivated accounts is less than, we have to purchase 160M RAM;
+* CPU 40s;
+* NET 16MB;
 * It should takes 30 minutes to finish whole importing process
 
 ### Open to Community for 3 days
@@ -143,7 +143,7 @@ Account to be burned [unactive_airdrop_accounts.csv](https://github.com/boscore/
 
 ### Upgrade eosio.system 
 
-After community has verified [bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn), use compiled version to upgraded `eosio.system` 和 `eosio.token` 
+After community has verified [bos.contract-prebuild/bos.burn](https://github.com/boscore/bos.contract-prebuild/tree/bos.burn), use compiled version to upgraded `eosio.system` and `eosio.token` 
 
 Prepare `bp.json` for top 30 Block Producers:
 ```
@@ -204,9 +204,9 @@ bash burntool.sh air
 
 _Note: Before performing the import, make sure that `burn.bos` has sufficient resources:_
 * Modify `burn_trigger_act` to specify the burning initialization account
-* RAM,`burn.bos` need to purchase 140M RAM；
-* CPU 10min；
-* NET 200MB；
+* RAM,`burn.bos` need to purchase 140M RAM;
+* CPU 10min;
+* NET 200MB;
 * The entire import process should be completed within 3 hours
 
 ### Check Burning Result
