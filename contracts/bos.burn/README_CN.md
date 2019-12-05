@@ -156,7 +156,7 @@ BOS主网截止`54171828`高度，需要燃烧的账户文件地址 [unactive_ai
 发起多签升级系统合约：
 
 ```
-# burnbosooooo is a common acount
+# burnbos4unac is a common acount
 
 CONTRACTS_FOLDER='./bos.contract-prebuild' 
 cd ${CONTRACTS_FOLDER}
@@ -165,18 +165,18 @@ git checkout bos.burn && git pull origin bos.burn
 # upgrade eosio contract
 cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
 # update updatesys.json expire time
-cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbos4unac updatesys -p burnbos4unac@active
 
 # upgrade eosio.token contract
-cleos set contract eosio.token eosio.token -p eosio -s -j -d > updatetoken.json
+cleos set contract eosio.token eosio.token -p eosio.token -s -j -d > updatetoken.json
 # update updatetoken.json expire time
-cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbos4unac updatetoken -p burnbos4unac@active
 ```
 
 同时发起 `eosio.system` 和 `eosio.token` 的多签升级，等待 BP 多签通过。
@@ -187,13 +187,13 @@ cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
 
 ```
 # set burning account: burn.bos
-cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbosooooo 336 -p  burnbosooooo@active
+cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
-cleos multisig review burnbosooooo enablebrun
+cleos multisig review burnbos4unac enablebrun
 # approve proposal
-cleos multisig approve burnbosooooo enablebrun  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+cleos multisig approve burnbos4unac enablebrun  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
 # exec proposal
-cleos multisig exec burnbosooooo enablebrun -p burnbosooooo@active
+cleos multisig exec burnbos4unac enablebrun -p burnbos4unac@active
 ```
 
 设置完燃烧账户以后，就可以进行燃烧：
@@ -228,13 +228,13 @@ bash burntool.sh air
 
 ```
 # burn hole.bos
-cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbosooooo 336 -p  burnbosooooo@active
+cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
-cleos multisig review burnbosooooo holebos
+cleos multisig review burnbos4unac holebos
 # approve proposal
-cleos multisig approve burnbosooooo holebos  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+cleos multisig approve burnbos4unac holebos  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
 # exec proposal
-cleos multisig exec burnbosooooo holebos -p burnbosooooo@active
+cleos multisig exec burnbos4unac holebos -p burnbos4unac@active
 ```
 
 # 收尾
@@ -251,18 +251,18 @@ git checkout master && git pull origin master
 # upgrade eosio contract
 cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
 # update updatesys.json expire time
-cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbos4unac updatesys -p burnbos4unac@active
 
 # upgrade eosio.token contract
 cleos set contract eosio.token eosio.token -p eosio.token -s -j -d > updatetoken.json
 # update updatetoken.json expire time
-cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
+cleos multisig exec burnbos4unac updatetoken -p burnbos4unac@active
 ```
 
 ### 释放 burn.bos 资源
@@ -274,9 +274,9 @@ bash burntool.sh clr
 然后发起 BP 多签将 `burn.bos` 的 `active` 权限更新回来，用于回收 `burn.bos` 对应的资源：
 
 ```
-cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbosooooo 144 -p burnbosooooo@active
+cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
 
-cleos multisig approve burnbosooooo upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
+cleos multisig approve burnbos4unac upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
 
-cleos multisig exec burnbosooooo upactive -p burnbosooooo@active
+cleos multisig exec burnbos4unac upactive -p burnbos4unac@active
 ```
