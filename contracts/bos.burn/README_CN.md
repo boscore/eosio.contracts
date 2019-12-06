@@ -187,13 +187,13 @@ cleos multisig exec burnbos4unac updatetoken -p burnbos4unac@active
 
 ```
 # set burning account: burn.bos
-cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbos4unac 336 -p  burnbos4unac@active
+cleos multisig propose enableburn ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
-cleos multisig review burnbos4unac enablebrun
+cleos multisig review burnbos4unac enableburn
 # approve proposal
-cleos multisig approve burnbos4unac enablebrun  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+cleos multisig approve burnbos4unac enableburn  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
 # exec proposal
-cleos multisig exec burnbos4unac enablebrun -p burnbos4unac@active
+cleos multisig exec burnbos4unac enableburn -p burnbos4unac@active
 ```
 
 设置完燃烧账户以后，就可以进行燃烧：
@@ -228,7 +228,7 @@ bash burntool.sh air
 
 ```
 # burn hole.bos
-cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbos4unac 336 -p  burnbos4unac@active
+cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"43951578.9396 BOS"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
 cleos multisig review burnbos4unac holebos
 # approve proposal

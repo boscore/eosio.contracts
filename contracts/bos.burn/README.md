@@ -149,7 +149,7 @@ After community has verified [bos.contract-prebuild/bos.burn](https://github.com
 Prepare `bp.json` for top 30 Block Producers:
 ```
 [
-    {"actor":"bponeoneonee","permission":"active"},
+    {"actor":"burnbos4unac","permission":"active"},
     ....
 ]
 ```
@@ -157,7 +157,7 @@ Prepare `bp.json` for top 30 Block Producers:
 Multisig to upgrade the system contract
 
 ```
-# burnbosooooo is a common acount
+# burnbos4unac is a common acount
 
 CONTRACTS_FOLDER='./bos.contract-prebuild' 
 cd ${CONTRACTS_FOLDER}
@@ -166,18 +166,18 @@ git checkout bos.burn && git pull origin bos.burn
 # upgrade eosio contract
 cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
 # update updatesys.json expire time
-cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatesys '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active
+cleos multisig exec burnbos4unac updatesys -p burnbos4unac@active
 
 # upgrade eosio.token contract
 cleos set contract eosio.token eosio.token -p eosio.token -s -j -d > updatetoken.json
 # update updatetoken.json expire time
-cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatetoken '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active
+cleos multisig exec burnbos4unac updatetoken -p burnbos4unac@active
 ```
 
 Trigger multisig upgrade for `eosio.system` and `eosio.token`, and wait for Block Producers to approve 
@@ -188,13 +188,13 @@ In order to ensure more transparency and openness, after BP multi-signature allo
 
 ```
 # set burning account: burn.bos
-cleos multisig propose enablebrun ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbosooooo 336 -p  burnbosooooo@active
+cleos multisig propose enableburn ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos setparameter '{"version":1,"executer":"burn.bos"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
-cleos multisig review burnbosooooo enablebrun
+cleos multisig review burnbos4unac enableburn
 # approve proposal
-cleos multisig approve burnbosooooo enablebrun  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+cleos multisig approve burnbos4unac enableburn  '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active 
 # exec proposal
-cleos multisig exec burnbosooooo enablebrun -p burnbosooooo@active
+cleos multisig exec burnbos4unac enableburn -p burnbos4unac@active
 ```
 
 After setting up the burning account, you can burn:
@@ -229,13 +229,13 @@ bash burntool.sh air
 
 ```
 # burn hole.bos
-cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbosooooo 336 -p  burnbosooooo@active
+cleos multisig propose holebos ../bp.json '[{"actor": "burn.bos", "permission": "active"}]' burn.bos burn '{"quantity":"6896959.3921 BOS"}' burnbos4unac 336 -p  burnbos4unac@active
 # review proposal
-cleos multisig review burnbosooooo holebos
+cleos multisig review burnbos4unac holebos
 # approve proposal
-cleos multisig approve burnbosooooo holebos  '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active 
+cleos multisig approve burnbos4unac holebos  '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active 
 # exec proposal
-cleos multisig exec burnbosooooo holebos -p burnbosooooo@active
+cleos multisig exec burnbos4unac holebos -p burnbos4unac@active
 ```
 
 # Summary
@@ -253,18 +253,18 @@ git checkout master && git pull origin master
 # upgrade eosio contract
 cleos set contract eosio eosio.system -p eosio -s -j -d > updatesys.json
 # update updatesys.json expire time
-cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbosooooo
+cleos multisig propose_trx updatesys ../bp.json updatesys.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatesys '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatesys -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatesys '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active
+cleos multisig exec burnbos4unac updatesys -p burnbos4unac@active
 
 # upgrade eosio.token contract
 cleos set contract eosio.token eosio.token -p eosio.token -s -j -d > updatetoken.json
 # update updatetoken.json expire time
-cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbosooooo
+cleos multisig propose_trx updatetoken ../bp.json updatetoken.json burnbos4unac
 # let BPs approve
-cleos multisig approve burnbosooooo updatetoken '{"actor":"bponeoneonee","permission":"active"}' -p bponeoneonee@active
-cleos multisig exec burnbosooooo updatetoken -p burnbosooooo@active
+cleos multisig approve burnbos4unac updatetoken '{"actor":"burnbos4unac","permission":"active"}' -p burnbos4unac@active
+cleos multisig exec burnbos4unac updatetoken -p burnbos4unac@active
 ```
 
 ### Release burn.bos Resource
@@ -276,9 +276,9 @@ bash burntool.sh clr
 To launch BP multisig to recover `active` permission of `burn.bos`, so as to restore resource of `burn.bos`:
 
 ```
-cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbosooooo 144 -p burnbosooooo@active
+cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
 
-cleos multisig approve burnbosooooo upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
+cleos multisig approve burnbos4unac upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
 
-cleos multisig exec burnbosooooo upactive -p burnbosooooo@active
+cleos multisig exec burnbos4unac upactive -p burnbos4unac@active
 ```
