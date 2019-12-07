@@ -276,7 +276,7 @@ bash burntool.sh clr
 To launch BP multisig to recover `active` permission of `burn.bos`, so as to restore resource of `burn.bos`:
 
 ```
-cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
+cleos multisig propose upactive ../bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
 
 cleos multisig approve burnbos4unac upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
 

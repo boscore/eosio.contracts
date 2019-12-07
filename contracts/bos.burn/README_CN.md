@@ -274,7 +274,7 @@ bash burntool.sh clr
 然后发起 BP 多签将 `burn.bos` 的 `active` 权限更新回来，用于回收 `burn.bos` 对应的资源：
 
 ```
-cleos multisig propose upactive bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
+cleos multisig propose upactive ../bp.json '[{"actor": "burn.bos", "permission": "owner"}]' eosio updateauth '{"account":"burn.bos","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key":"EOS8FsuQAe7vXzYnGWoDXtdMgTXc2Hv9ctqAMvtRPrYAvn17nCftR","weight":"1"}],"accounts":[],"waits":[]}}' burnbos4unac 144 -p burnbos4unac@active
 
 cleos multisig approve burnbos4unac upactive '{"actor":"eosio","permission":"active"}' -p eosio@active
 
